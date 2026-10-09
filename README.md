@@ -76,7 +76,7 @@ packages/exifo-core zero-dependency npm package of the parser
 
 The site is plain static files in `out/`.
 
-- **Vercel:** `vercel.json` is included (Next.js preset, build command, headers). Vercel's Next.js builder detects the static export and serves it as static files. Leave **Output Directory** unset in the project settings: pointing it at `out` makes the build fail with "routes-manifest.json couldn't be found".
+- **Vercel:** `vercel.json` is included (Next.js preset, build command, headers). Vercel's Next.js builder detects the static export and serves it as static files. Its output directory is pinned to `.next`, which overrides the dashboard: an Output Directory of `out` makes the build fail with "routes-manifest.json couldn't be found".
 - **Cloudflare Pages:** build command `npm run build`, output directory `out`. `public/_headers` sets security and cache headers.
 - **Anything else:** serve `out/` with `/x/` resolving to `/x/index.html`.
 
