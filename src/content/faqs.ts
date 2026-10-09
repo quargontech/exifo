@@ -1,4 +1,5 @@
 import type { Faq } from "@/lib/seo";
+import { ANALYTICS_ENABLED } from "@/lib/analytics-config";
 
 export interface FaqGroup {
   id: string;
@@ -21,7 +22,9 @@ export const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         q: "Does Exifo track me or keep my files?",
-        a: "There are no accounts, no tracking cookies and no analytics scripts. Files exist only in the open tab and are gone when you close or reload it. Only your light or dark theme choice is remembered.",
+        a: ANALYTICS_ENABLED
+          ? "Files exist only in the open tab and are gone when you close or reload it; they are never sent anywhere. There are no accounts. Exifo uses Google Analytics to count visits only if you allow it, and you can change that choice in the footer."
+          : "There are no accounts, no tracking cookies and no analytics scripts. Files exist only in the open tab and are gone when you close or reload it. Only your light or dark theme choice is remembered.",
       },
       {
         q: "Is it safe to use Exifo on private photos?",

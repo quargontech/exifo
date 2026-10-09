@@ -5,8 +5,9 @@ import { TOOLS } from "@/lib/tools";
 import { GUIDES } from "@/content/guides/meta";
 import { LockIcon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { AnalyticsSettingsLink } from "@/components/Analytics";
 
-function Col({ title, links }: { title: string; links: { href: string; label: string }[] }) {
+function Col({ title, links, children }: { title: string; links: { href: string; label: string }[]; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2.5">
       <h2 className="m-0 font-mono text-[11px] font-normal tracking-[0.08em] text-ink-3">{title}</h2>
@@ -18,6 +19,7 @@ function Col({ title, links }: { title: string; links: { href: string; label: st
             </Link>
           </li>
         ))}
+        {children && <li>{children}</li>}
       </ul>
     </div>
   );
@@ -52,7 +54,9 @@ export function SiteFooter({ inset }: { inset?: boolean }) {
               { href: "/privacy/", label: "Privacy" },
               { href: "/terms/", label: "Terms of use" },
             ]}
-          />
+          >
+            <AnalyticsSettingsLink className="p-0 text-left text-sm text-ink-2 hover:text-ink" />
+          </Col>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-[13px] text-ink-3">
           <span>© {year} Exifo. Free image metadata tools that run in your browser.</span>

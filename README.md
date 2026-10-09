@@ -13,7 +13,7 @@ npm run build        # static export to out/ (+ service worker)
 npm start            # serve out/ on http://localhost:3000
 ```
 
-Requires Node 20 or newer (`.nvmrc` pins 22). `npm run build` downloads the three Google fonts once at build time and bundles them; the deployed site makes no third-party requests.
+Requires Node 20 or newer (`.nvmrc` pins 22). `npm run build` downloads the three Google fonts once at build time and bundles them. The deployed site makes no third-party requests unless analytics is configured and the visitor allows it.
 
 ## Scripts
 
@@ -80,9 +80,26 @@ The site is plain static files in `out/`.
 - **Cloudflare Pages:** build command `npm run build`, output directory `out`. `public/_headers` sets security and cache headers.
 - **Anything else:** serve `out/` with `/x/` resolving to `/x/index.html`.
 
-Set `NEXT_PUBLIC_SITE_URL` (default `https://exifo.app`) for canonical URLs, the sitemap and Open Graph tags.
+Environment variables (see `.env.example`; both are read at build time, so redeploy after changing them):
+
+| Variable               | Purpose                                                                           |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URLs, the sitemap and Open Graph tags. Default `https://exifo.app`.     |
+| `NEXT_PUBLIC_GA_ID`    | Google Analytics 4 Measurement ID (`G-…`). Leave empty to ship without analytics. |
 
 GitHub Actions (`.github/workflows/ci.yml`) runs lint and a full production build on every push and pull request to `main`.
+
+## Analytics
+
+Google Analytics 4 is optional and consent-based (`src/lib/analytics.ts`, `src/components/Analytics.tsx`).
+
+- Without `NEXT_PUBLIC_GA_ID` nothing is loaded and no banner is shown.
+- With it, visitors see a small banner. Nothing is requested from Google until they choose **Allow**; **Decline** is remembered and loads nothing. **Analytics settings** in the footer reopens the banner, and declining after allowing stops hits at once and deletes the `_ga` cookies.
+- Google signals and ad personalisation are off; every ad consent signal is sent as denied.
+- Page views, including client-side navigation between tools, come from GA4's enhanced measurement (on by default for a web stream). No custom events are sent, and files, file names and metadata are never part of any request.
+- The Privacy page and the FAQ describe analytics only when it is configured.
+
+**On Vercel:** in Google Analytics create a GA4 property and a Web data stream for your domain and copy its Measurement ID. In Vercel open the project, go to **Settings → Environment Variables**, add `NEXT_PUBLIC_GA_ID` for Production, then redeploy.
 
 ## PWA
 

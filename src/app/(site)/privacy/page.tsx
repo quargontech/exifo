@@ -1,3 +1,4 @@
+import { ANALYTICS_ENABLED } from "@/lib/analytics-config";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
@@ -7,7 +8,9 @@ import { Prose } from "@/components/Prose";
 
 export const metadata = pageMetadata({
   title: "Privacy",
-  description: "Exifo processes images entirely in your browser. Nothing is uploaded, there are no accounts and no tracking.",
+  description: ANALYTICS_ENABLED
+    ? "Exifo processes images entirely in your browser. Nothing is uploaded, there are no accounts, and analytics only runs if you allow it."
+    : "Exifo processes images entirely in your browser. Nothing is uploaded, there are no accounts and no tracking.",
   path: "/privacy/",
   og: "home",
 });
@@ -34,12 +37,17 @@ export default function Page() {
         <h2>What the app stores on your device</h2>
         <ul>
           <li>Your light or dark theme choice, in local storage.</li>
+          {ANALYTICS_ENABLED && <li>Whether you allowed or declined analytics, in local storage.</li>}
           <li>The app’s own files, in the browser cache, so it works offline after the first visit.</li>
           <li>
             If you share images to Exifo from your phone’s share menu, they are held briefly in the browser cache until the page opens them, then deleted.
           </li>
         </ul>
-        <p>There are no accounts, no advertising, no tracking cookies and no analytics scripts.</p>
+        {ANALYTICS_ENABLED ? (
+          <p>There are no accounts and no advertising. Analytics runs only if you allow it, as described below.</p>
+        ) : (
+          <p>There are no accounts, no advertising, no tracking cookies and no analytics scripts.</p>
+        )}
 
         <h2>Network requests</h2>
         <ul>
@@ -55,7 +63,38 @@ export default function Page() {
             Maps are never loaded automatically. If you choose <strong>Show map</strong> or <strong>Open in OpenStreetMap</strong> for a photo’s location,
             OpenStreetMap receives map tile or page requests that reveal roughly where the photo was taken. Your file is not sent.
           </li>
+          {ANALYTICS_ENABLED && (
+            <li>
+              If you allow analytics, your browser loads Google Analytics from <code>googletagmanager.com</code> and sends usage data to Google. See{" "}
+              <a href="#analytics">Analytics</a>.
+            </li>
+          )}
         </ul>
+        {ANALYTICS_ENABLED && (
+          <>
+            <h2 id="analytics">Analytics</h2>
+            <p>
+              Exifo asks before using Google Analytics. Nothing is loaded from Google until you choose <strong>Allow</strong>. If you decline, no analytics
+              script runs and no analytics cookies are set.
+            </p>
+            <p>If you allow it, Google Analytics receives:</p>
+            <ul>
+              <li>the pages you visit on Exifo, the page that linked you here, and how long you stay;</li>
+              <li>your browser, device type, screen size and language;</li>
+              <li>an approximate location derived from your IP address (Google Analytics does not store the IP address itself).</li>
+            </ul>
+            <p>
+              It sets first-party cookies named <code>_ga</code> and <code>_ga_…</code> that last up to two years. Google signals and ad personalisation are
+              turned off. Google Analytics never receives your images, their file names or their metadata: files are processed on your device and are not part
+              of any request.
+            </p>
+            <p>
+              You can change your choice at any time with <strong>Analytics settings</strong> in the footer. Declining removes the cookies. Google’s handling of
+              this data is described in the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.
+            </p>
+          </>
+        )}
+
         <p>
           The web host that serves these pages may keep standard access logs, such as IP address, browser type and the page requested, as any website host does.
         </p>

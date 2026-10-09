@@ -5,6 +5,7 @@ import { PwaClient } from "@/components/PwaClient";
 import { siteJsonLd, SITE_NAME, TAGLINE } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 import { THEME_SCRIPT } from "@/lib/theme";
+import { Analytics } from "@/components/Analytics";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <PwaClient />
+        <Analytics />
       </body>
     </html>
   );
