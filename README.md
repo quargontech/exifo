@@ -13,7 +13,7 @@ npm run build        # static export to out/ (+ service worker)
 npm start            # serve out/ on http://localhost:3000
 ```
 
-Requires Node 20 or newer (`.nvmrc` pins 22). `npm run build` downloads the three Google fonts once at build time and bundles them. The deployed site makes no third-party requests unless analytics is configured and the visitor allows it.
+Requires Node 22 (`.nvmrc`; `engines` pins Vercel builds to 22.x). `npm run build` downloads the three Google fonts once at build time and bundles them. The deployed site makes no third-party requests unless analytics is configured and the visitor allows it.
 
 ## Scripts
 
@@ -76,7 +76,7 @@ packages/exifo-core zero-dependency npm package of the parser
 
 The site is plain static files in `out/`.
 
-- **Vercel:** `vercel.json` is included (build command, output directory, headers).
+- **Vercel:** `vercel.json` is included (Next.js preset, build command, headers). Vercel's Next.js builder detects the static export and serves it as static files. Leave **Output Directory** unset in the project settings: pointing it at `out` makes the build fail with "routes-manifest.json couldn't be found".
 - **Cloudflare Pages:** build command `npm run build`, output directory `out`. `public/_headers` sets security and cache headers.
 - **Anything else:** serve `out/` with `/x/` resolving to `/x/index.html`.
 

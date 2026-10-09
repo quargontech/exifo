@@ -10,7 +10,7 @@
   },
   "author": "Quargon Tech",
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   },
   "scripts": {
     "predev": "node scripts/copy-wasm.mjs",
