@@ -1,0 +1,38 @@
+{
+  "name": "exifo-core",
+  "version": "0.1.0",
+  "description": "Lossless image metadata removal for JPEG, PNG and WebP. Zero dependencies; runs in browsers, Web Workers and Node.",
+  "keywords": [
+    "exif",
+    "metadata",
+    "c2pa",
+    "xmp",
+    "iptc",
+    "jpeg",
+    "png",
+    "webp",
+    "privacy",
+    "gps"
+  ],
+  "homepage": "https://exifo.app",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/types/core.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/core.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}

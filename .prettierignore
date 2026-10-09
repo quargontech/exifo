@@ -1,0 +1,7 @@
+out
+.next
+.next-dev
+node_modules
+public/wasm
+packages/*/dist
+package-lock.json

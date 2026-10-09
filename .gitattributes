@@ -1,0 +1,8 @@
+# Store text with LF line endings regardless of the committer's OS.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.wasm binary
+*.woff2 binary

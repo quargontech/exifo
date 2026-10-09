@@ -1,0 +1,70 @@
+{
+  "name": "exifo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Check, edit and clean image metadata in your browser. Static, frontend-only, nothing is uploaded.",
+  "homepage": "https://exifo.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quargontech/exifo.git"
+  },
+  "author": "Quargon Tech",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "predev": "node scripts/copy-wasm.mjs",
+    "dev": "node scripts/dev.mjs",
+    "dev:plain": "next dev",
+    "prebuild": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
+    "build": "node scripts/copy-wasm.mjs && next build && node scripts/build-sw.mjs",
+    "start": "node scripts/serve.mjs 3000",
+    "og": "node scripts/og-images.mjs",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "build:core": "node scripts/build-core.mjs",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@contentauth/c2pa-web": "^0.15.3",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@jsquash/avif": "^2.1.1",
+    "@jsquash/jpeg": "^1.6.0",
+    "@jsquash/oxipng": "^2.3.0",
+    "@jsquash/png": "^3.1.1",
+    "@jsquash/resize": "^2.1.1",
+    "@jsquash/webp": "^1.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "comlink": "^4.4.2",
+    "exifr": "^7.1.3",
+    "fflate": "^0.8.3",
+    "heic2any": "^0.0.4",
+    "leaflet": "^1.9.4",
+    "next": "15.5.27",
+    "pdf-lib": "^1.17.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-dropzone": "^20.1.2",
+    "react-image-crop": "^11.1.2",
+    "tailwind-merge": "^3.7.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "esbuild": "^0.28.2",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.27",
+    "playwright-core": "^1.64.0",
+    "prettier": "^3.9.9",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

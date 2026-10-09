@@ -1,0 +1,403 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Exifo tokens. Cool neutrals carry the interface. Ink is for actions.
+   Tag orange marks what was found in a file. Proof blue marks what has been proven. */
+:root {
+  color-scheme: light;
+  --ground: #f5f6f8; /* Paper */
+  --surface: #ffffff;
+  --surface-2: #eef0f3;
+  --line: #e1e4e9;
+  --line-strong: #c9ced6;
+  --text: #0f1218; /* Ink */
+  --text-2: #4a5261;
+  --text-3: #5f6878;
+  --tag: #f45d0e;
+  --tag-deep: #a83c06;
+  --tag-tint: #fff0e6;
+  --tag-line: #f6d2ba;
+  --proof: #2450e0;
+  --proof-hover: #1d3fb8;
+  --proof-tint: #eaf0ff;
+  --danger: #b42318;
+  --danger-tint: #fdecea;
+  --primary: #0f1218;
+  --primary-fg: #ffffff;
+  --primary-hover: #262b35;
+  --kept: #c9ced6;
+  --segment-track: #eef0f3;
+  --segment-thumb: #ffffff;
+  --switch-off: #c9ced6;
+  --switch-knob: #ffffff;
+  --mark: #0f1218;
+  --shadow-segment: 0 1px 2px rgba(15, 18, 24, 0.14);
+  --shimmer: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0b0d11;
+  --surface: #13161c;
+  --surface-2: #1a1e26;
+  --line: #252a33;
+  --line-strong: #363d49;
+  --text: #eceff4;
+  --text-2: #a9b1bf;
+  --text-3: #8791a1;
+  --tag: #ff7a33;
+  --tag-deep: #ff7a33;
+  --tag-tint: #2b1a0f;
+  --tag-line: #5a3013;
+  --proof: #8daeff;
+  --proof-hover: #b3c8ff;
+  --proof-tint: #141d36;
+  --danger: #ff8a7a;
+  --danger-tint: #2c1513;
+  --primary: #eceff4;
+  --primary-fg: #0f1218;
+  --primary-hover: #ffffff;
+  --kept: #454d5b;
+  --segment-track: #0b0d11;
+  --segment-thumb: #252a33;
+  --switch-off: #363d49;
+  --switch-knob: #0b0d11;
+  --mark: #eceff4;
+  --shadow-segment: none;
+  --shimmer: rgba(255, 255, 255, 0.07);
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-2);
+  --color-ink-3: var(--text-3);
+  --color-tag: var(--tag);
+  --color-tag-deep: var(--tag-deep);
+  --color-tag-tint: var(--tag-tint);
+  --color-tag-line: var(--tag-line);
+  --color-proof: var(--proof);
+  --color-proof-hover: var(--proof-hover);
+  --color-proof-tint: var(--proof-tint);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-hover: var(--primary-hover);
+  --color-kept: var(--kept);
+  --color-segment-track: var(--segment-track);
+  --color-segment-thumb: var(--segment-thumb);
+  --color-switch-off: var(--switch-off);
+  --color-switch-knob: var(--switch-knob);
+  --color-mark: var(--mark);
+
+  --font-display: var(--font-bricolage), "Trebuchet MS", system-ui, sans-serif;
+  --font-sans: var(--font-instrument), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --shadow-segment: var(--shadow-segment);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  /* No visible scrollbars anywhere; wheel, touch and keyboard scrolling still work. */
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: var(--proof);
+  }
+  a:hover {
+    color: var(--proof-hover);
+  }
+  :focus-visible {
+    outline: 2px solid var(--proof);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--proof-tint);
+  }
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  input[type="search"]::-webkit-search-cancel-button {
+    filter: grayscale(1);
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 24;
+    letter-spacing: -0.03em;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Theme switch. The new theme is revealed by a clip-path animation started in setTheme(),
+   so the default cross-fade of the root snapshot is turned off. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 1;
+}
+/* Fallback for browsers without view transitions: fade colours for a moment. */
+.theme-fade,
+.theme-fade *,
+.theme-fade *::before,
+.theme-fade *::after {
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    color 0.4s ease,
+    fill 0.4s ease,
+    stroke 0.4s ease,
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    rotate 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    scale 0.5s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+/* Before/after comparison slider thumb */
+.ba-range {
+  appearance: none;
+  background: transparent;
+}
+.ba-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  background: transparent;
+  cursor: ew-resize;
+}
+.ba-range::-moz-range-thumb {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+}
+
+/* Range inputs */
+input[type="range"].exifo-range {
+  accent-color: var(--text);
+  height: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes exifo-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.animate-dot {
+  animation: exifo-pulse 1.2s ease-in-out infinite;
+}
+
+/* Processing animations. Short and quiet; with reduced motion they settle on a static frame. */
+
+/* A scan line that sweeps down an image while it is being read or written. */
+@keyframes exifo-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+.exifo-scan {
+  --scan: var(--tag);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.exifo-scan-proof {
+  --scan: var(--proof);
+}
+.exifo-scan::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--scan) 6%, transparent) 50%,
+    color-mix(in srgb, var(--scan) 30%, transparent) 93%,
+    var(--scan) 96.5%,
+    transparent 100%
+  );
+  animation: exifo-scan 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* Skeleton placeholder while a file is being read. */
+@keyframes exifo-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+.exifo-shimmer {
+  background-color: var(--surface-2);
+  background-image: linear-gradient(90deg, transparent 0%, var(--shimmer) 50%, transparent 100%);
+  background-size: 50% 100%;
+  background-repeat: no-repeat;
+  animation: exifo-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Indeterminate progress: a short bar sliding across the track. */
+@keyframes exifo-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+.exifo-slide {
+  animation: exifo-slide 1.3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* Moving sheen on a progress fill while work is running. */
+.exifo-sheen {
+  background-image: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: exifo-shimmer 1.2s linear infinite;
+}
+
+/* A removed metadata block: the orange fill lifts out, leaving the dashed outline. */
+@keyframes exifo-peel {
+  0% {
+    background-color: var(--tag);
+    transform: scaleY(1);
+  }
+  40% {
+    background-color: var(--tag);
+    transform: scaleY(1.45);
+  }
+  100% {
+    background-color: transparent;
+    transform: scaleY(1);
+  }
+}
+.exifo-peel {
+  animation: exifo-peel 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Blocks about to be removed blink in turn while the file is written. */
+@keyframes exifo-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.exifo-blink {
+  animation: exifo-blink 0.9s ease-in-out infinite;
+}
+
+/* A result badge arriving. */
+@keyframes exifo-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.exifo-pop {
+  animation: exifo-pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* New cards and panels fade up into place. */
+@keyframes exifo-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.exifo-enter {
+  animation: exifo-enter 0.3s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exifo-scan::after {
+    animation: none;
+    background: color-mix(in srgb, var(--scan) 12%, transparent);
+  }
+  .exifo-shimmer,
+  .exifo-sheen {
+    background-image: none;
+  }
+}

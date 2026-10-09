@@ -1,0 +1,105 @@
+{
+  "id": "/",
+  "name": "Exifo · Image metadata toolkit",
+  "short_name": "Exifo",
+  "description": "Check, edit and clean image metadata in your browser.",
+  "start_url": "/clean/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5F6F8",
+  "theme_color": "#0F1218",
+  "categories": [
+    "photo",
+    "utilities",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Clean",
+      "url": "/clean/",
+      "description": "Remove metadata from images"
+    },
+    {
+      "name": "Inspect",
+      "url": "/inspect/",
+      "description": "View everything inside an image"
+    },
+    {
+      "name": "Check",
+      "url": "/check/",
+      "description": "Check AI and provenance markers"
+    },
+    {
+      "name": "Compress",
+      "url": "/compress/",
+      "description": "Make images smaller"
+    }
+  ],
+  "share_target": {
+    "action": "/share-target/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "images",
+          "accept": [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp"
+          ]
+        }
+      ]
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "/clean/",
+      "accept": {
+        "image/jpeg": [
+          ".jpg",
+          ".jpeg"
+        ],
+        "image/png": [
+          ".png"
+        ],
+        "image/webp": [
+          ".webp"
+        ]
+      }
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
+}
