@@ -15,6 +15,8 @@ import { Field, inputClass, Segmented, selectClass, Switch } from "@/components/
 import { Notice } from "@/components/ui/notice";
 import { PreviewPlaceholder, Spinner } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
+import { useCreditSetting } from "@/lib/credit";
+import { CreditToggle } from "@/components/images/CreditToggle";
 import { createResults } from "@/store/results";
 import { useImages, type ImageEntry } from "@/store/images";
 
@@ -41,13 +43,14 @@ export function CompressTool() {
   const [targetKB, setTargetKB] = useState(200);
   const [lossless, setLossless] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [credit] = useCreditSetting();
 
   const fmtFor = (f: ImageEntry): OutFormat => (format === "auto" ? autoFormat(f.format, f.hasAlpha) : format);
   const settings = (f: ImageEntry): EncodeSettings => {
     const fmt = fmtFor(f);
     return { format: fmt, quality, lossless: (fmt === "webp" || fmt === "avif") && lossless, optimizePng: fmt === "png" };
   };
-  const key = `${format}|${mode}|${quality}|${targetKB}|${lossless}`;
+  const key = `${format}|${mode}|${quality}|${targetKB}|${lossless}|${credit}`;
   useResultsHousekeeping(useCompressResults, key);
 
   const build: BuildRequest = (src, f) => ({
@@ -55,6 +58,7 @@ export function CompressTool() {
     encode: settings(f),
     background: fmtFor(f) === "jpeg" ? "#ffffff" : undefined,
     targetBytes: mode === "target" ? targetKB * 1000 : undefined,
+    credit,
   });
   const preview = usePreview(selected, key, build, selected ? fmtFor(selected) : "jpeg");
 
@@ -183,8 +187,9 @@ export function CompressTool() {
             </div>
           )}
           {(format === "webp" || format === "avif") && <Switch checked={lossless} onChange={setLossless} label="Lossless" />}
+          <CreditToggle />
           <Notice tone="quiet">
-            Metadata is removed and the orientation is applied to the pixels. Colours are converted to sRGB, so wide-gamut images lose their extra gamut.
+            Other metadata is removed and the orientation is applied to the pixels. Colours are converted to sRGB, so wide-gamut images lose their extra gamut.
           </Notice>
         </section>
       </div>

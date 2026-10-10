@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { QueueNotices } from "@/components/QueueNotices";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
+import { ShareExifo } from "@/components/ShareExifo";
 import { pluralize } from "@/lib/format";
 import { useImages } from "@/store/images";
 
@@ -83,6 +84,7 @@ export function BatchBar({
   };
   return (
     <>
+      {done > 0 && <ShareExifo />}
       <section
         aria-label="Batch actions"
         className="relative hidden flex-wrap items-center justify-between gap-x-5 gap-y-3 overflow-hidden rounded-2xl border border-line bg-surface py-3 pl-5 pr-3 lg:flex"

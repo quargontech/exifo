@@ -175,7 +175,7 @@ export const TOOLS: Tool[] = [
     subtitle: "Combine images into one PDF.",
     seoTitle: "Images to PDF: Combine JPG and PNG into One PDF",
     description:
-      "Combine JPG, PNG, WebP and HEIC images into one PDF. Reorder pages, choose A4, Letter or fit to image. JPEGs are embedded without re-encoding.",
+      "Combine JPG, PNG, WebP, HEIC, AVIF, GIF and BMP images into one PDF. Reorder pages, choose A4, Letter or fit to image. JPEGs are embedded without re-encoding.",
     blurb: "Reorder pages and export one PDF. JPEGs embedded as they are.",
   },
 ];

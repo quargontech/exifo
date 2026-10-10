@@ -9,6 +9,8 @@ import type { Anchor, WatermarkSpec } from "@/lib/image-ops";
 import { ImageList } from "@/components/images/ImageList";
 import { BatchBar, ImageToolFrame } from "@/components/images/ImageToolFrame";
 import { outName, runBatch, runJob, usePreview, useResultsHousekeeping, type BuildRequest } from "@/components/images/jobs";
+import { useCreditSetting } from "@/lib/credit";
+import { CreditToggle } from "@/components/images/CreditToggle";
 import { DownloadIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/badges";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,7 @@ export function WatermarkTool() {
   const [format, setFormat] = useState<"auto" | OutFormat>("auto");
   const [quality, setQuality] = useState(90);
   const [busy, setBusy] = useState(false);
+  const [credit] = useCreditSetting();
   const logoInput = useRef<HTMLInputElement>(null);
 
   const spec = (): WatermarkSpec => ({
@@ -68,12 +71,18 @@ export function WatermarkTool() {
   });
   const fmtFor = (f: ImageEntry): OutFormat => (format === "auto" ? autoFormat(f.format, f.hasAlpha) : format);
   const ready = kind === "text" ? text.trim().length > 0 : !!logo;
-  const key = JSON.stringify({ kind, text, color, logo: logo?.name, position, tiled, opacity, size, rotation, margin, format, quality });
+  const key = JSON.stringify({ kind, text, color, logo: logo?.name, position, tiled, opacity, size, rotation, margin, format, quality, credit });
   useResultsHousekeeping(useWatermarkResults, key);
 
   const build: BuildRequest = (src, f) => {
     const fmt = fmtFor(f);
-    return { ...src, watermark: spec(), encode: { format: fmt, quality, optimizePng: fmt === "png" }, background: fmt === "jpeg" ? "#ffffff" : undefined };
+    return {
+      ...src,
+      watermark: spec(),
+      encode: { format: fmt, quality, optimizePng: fmt === "png" },
+      background: fmt === "jpeg" ? "#ffffff" : undefined,
+      credit,
+    };
   };
   const buildPreview: BuildRequest = (src, f) => {
     const s = Math.min(1, 900 / Math.max(f.width, f.height));
@@ -220,6 +229,7 @@ export function WatermarkTool() {
             </select>
             <Slider label="Quality" value={quality} onChange={setQuality} min={40} max={100} />
           </div>
+          <CreditToggle />
           <Notice tone="quiet">Visible watermarks only. The image is re-encoded and its metadata removed.</Notice>
         </section>
       </div>

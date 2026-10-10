@@ -98,6 +98,7 @@ export function CompareTool() {
     onlyA: fieldDiff.filter((r) => r.status === "only-a").length,
     onlyB: fieldDiff.filter((r) => r.status === "only-b").length,
   };
+  const metaSame = counts.different === 0 && counts.onlyA === 0 && counts.onlyB === 0;
 
   const slotView = (slot: Slot | null, label: "A" | "B", set: (s: Slot | null) => void) =>
     slot ? (
@@ -161,9 +162,13 @@ export function CompareTool() {
             ) : identical ? (
               <>
                 <SignalBadge tone="proof" icon="tick">
-                  Image data identical
+                  {metaSame ? "Files identical" : "Image data identical"}
                 </SignalBadge>
-                <span className="text-sm text-ink-2">Both files hold the same compressed image. Only metadata differs.</span>
+                <span className="text-sm text-ink-2">
+                  {metaSame
+                    ? "These two files are identical: the same image data and the same metadata."
+                    : "Both files hold the same compressed image. Only metadata differs."}
+                </span>
               </>
             ) : (
               <>

@@ -8,6 +8,8 @@ import { formatBytes } from "@/lib/format";
 import { ImageList } from "@/components/images/ImageList";
 import { BatchBar, ImageToolFrame } from "@/components/images/ImageToolFrame";
 import { outName, runBatch, runJob, useResultsHousekeeping, type BuildRequest } from "@/components/images/jobs";
+import { useCreditSetting } from "@/lib/credit";
+import { CreditToggle } from "@/components/images/CreditToggle";
 import { ArrowRightIcon, DownloadIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/badges";
 import { Button } from "@/components/ui/button";
@@ -28,9 +30,10 @@ export function ConvertTool() {
   const [lossless, setLossless] = useState(false);
   const [background, setBackground] = useState("#ffffff");
   const [busy, setBusy] = useState(false);
+  const [credit] = useCreditSetting();
 
   const lossy = format === "jpeg" || ((format === "webp" || format === "avif") && !lossless);
-  const key = `${format}|${quality}|${lossless}|${background}`;
+  const key = `${format}|${quality}|${lossless}|${background}|${credit}`;
   useResultsHousekeeping(useConvertResults, key);
   const transparent = files.filter((f) => f.hasAlpha);
   const hasHeic = files.some((f) => f.format === "heic");
@@ -40,6 +43,7 @@ export function ConvertTool() {
     ...src,
     encode: { format, quality, lossless: (format === "webp" || format === "avif") && lossless, optimizePng: format === "png" },
     background: format === "jpeg" ? background : undefined,
+    credit,
   });
 
   const run = async () => {
@@ -96,6 +100,7 @@ export function ConvertTool() {
         )}
         {hasHeic && <Notice tone="quiet">HEIC files are decoded on your device the first time they are converted, which can take a few seconds.</Notice>}
         {hasGif && <Notice tone="quiet">Animated GIFs are converted from their first frame.</Notice>}
+        <CreditToggle />
       </section>
 
       <ImageList

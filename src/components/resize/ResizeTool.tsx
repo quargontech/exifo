@@ -13,6 +13,8 @@ import { stripWorker } from "@/lib/workers";
 import { ImageList } from "@/components/images/ImageList";
 import { BatchBar, ImageToolFrame } from "@/components/images/ImageToolFrame";
 import { outName, runBatch, runJob, usePreview, useResultsHousekeeping, type BuildRequest } from "@/components/images/jobs";
+import { useCreditSetting } from "@/lib/credit";
+import { CreditToggle } from "@/components/images/CreditToggle";
 import { DownloadIcon, FlipHIcon, FlipVIcon, RotateCcwIcon, RotateCwIcon } from "@/components/icons";
 import { SignalBadge, StatusBadge } from "@/components/ui/badges";
 import { Button } from "@/components/ui/button";
@@ -84,7 +86,9 @@ export function ResizeTool() {
   const [flipV, setFlipV] = useState(false);
   const [format, setFormat] = useState<"auto" | OutFormat>("auto");
   const [quality, setQuality] = useState(92);
+  const [noUpscale, setNoUpscale] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [credit] = useCreditSetting();
 
   const p = PRESETS.find((x) => x.id === preset);
   const swap = rotate % 180 !== 0;
@@ -112,6 +116,11 @@ export function ResizeTool() {
       const s = longest / Math.max(cw, ch);
       size = { width: Math.max(1, Math.round(cw * s)), height: Math.max(1, Math.round(ch * s)) };
     }
+    // Never enlarge past the source unless the user asks: scale the target down to fit the source box.
+    if (size && noUpscale && !p) {
+      const over = Math.max(size.width / cw, size.height / ch);
+      if (over > 1) size = { width: Math.max(1, Math.round(size.width / over)), height: Math.max(1, Math.round(size.height / over)) };
+    }
     return { transform: { crop, rotate, flipH, flipV, resize: size }, out: size ?? { width: Math.round(cw), height: Math.round(ch) } };
   };
 
@@ -124,13 +133,13 @@ export function ResizeTool() {
     return { format: fmt, quality, lossless: (fmt === "webp" || fmt === "avif") && rotateOnly, optimizePng: fmt === "png" };
   };
 
-  const key = JSON.stringify({ mode, w, h, lock, percent, longest, preset, crops, aspect, rotate, flipH, flipV, format, quality });
+  const key = JSON.stringify({ mode, w, h, lock, percent, longest, preset, crops, aspect, rotate, flipH, flipV, format, quality, noUpscale, credit });
   useResultsHousekeeping(useResizeResults, key);
 
   const build: BuildRequest = (src, f) => {
     const { transform } = plan(f);
     const enc = encodeFor(f);
-    return { ...src, transform, encode: enc, background: enc.format === "jpeg" ? "#ffffff" : undefined };
+    return { ...src, transform, encode: enc, background: enc.format === "jpeg" ? "#ffffff" : undefined, credit };
   };
   const buildPreview: BuildRequest = (src, f) => {
     const { transform, out } = plan(f);
@@ -356,6 +365,14 @@ export function ResizeTool() {
                     </div>
                   </Field>
                 )}
+                {mode !== "none" && (
+                  <Switch
+                    checked={noUpscale}
+                    onChange={setNoUpscale}
+                    label="Don’t enlarge"
+                    description="Smaller images keep their size instead of being scaled up."
+                  />
+                )}
               </>
             )}
             {p && (
@@ -418,6 +435,7 @@ export function ResizeTool() {
             </select>
             {!allLossless && <Slider label="Quality" value={quality} onChange={setQuality} min={40} max={100} />}
           </div>
+          {!allLossless && <CreditToggle />}
           <Notice tone="quiet">Resizing re-encodes the image and removes metadata. Rotating a JPEG without cropping or resizing is lossless.</Notice>
         </section>
       </div>

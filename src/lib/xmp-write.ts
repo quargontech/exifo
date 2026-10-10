@@ -111,3 +111,22 @@ export function riffChunk(fourcc: string, data: Uint8Array): Uint8Array {
 }
 
 export const buildXmpWebpChunk = (packet: string) => riffChunk("XMP ", encodeUtf8(packet));
+
+/** The software credit written to re-encoded image-tool output. Shown plainly in Inspect. */
+export const CREDIT_SOFTWARE = "Exifo (https://exifo.app)";
+
+/** A minimal XMP packet carrying only `xmp:CreatorTool`, used for the optional Exifo credit. */
+export function buildCreditXmp(): string {
+  return [
+    `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>`,
+    `<x:xmpmeta xmlns:x="adobe:ns:meta/">`,
+    ` <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">`,
+    `  <rdf:Description rdf:about=""`,
+    `    xmlns:xmp="http://ns.adobe.com/xap/1.0/">`,
+    `   <xmp:CreatorTool>${esc(CREDIT_SOFTWARE)}</xmp:CreatorTool>`,
+    `  </rdf:Description>`,
+    ` </rdf:RDF>`,
+    `</x:xmpmeta>`,
+    `<?xpacket end="w"?>`,
+  ].join("\n");
+}

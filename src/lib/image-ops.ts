@@ -4,7 +4,10 @@
  * Metadata is not carried over; EXIF orientation is applied to the pixels.
  */
 
+import { toArrayBuffer } from "./bytes";
 import { decodeToBitmap, encodeImage, isLossy, resizeImageData, type EncodeSettings } from "./codecs";
+import { stripContainer } from "./container";
+import { buildCreditXmp } from "./xmp-write";
 
 export type Anchor = "tl" | "tc" | "tr" | "ml" | "mc" | "mr" | "bl" | "bc" | "br";
 
@@ -48,6 +51,8 @@ export interface ProcessRequest {
   background?: string;
   /** Aim for at most this many bytes. */
   targetBytes?: number;
+  /** Write a small "Software: Exifo" XMP credit into the output (JPEG, PNG and WebP only). */
+  credit?: boolean;
 }
 
 export interface ProcessResult {
@@ -192,11 +197,26 @@ async function encodeToTarget(img: ImageData, s: EncodeSettings, target: number)
   return { buf: await at(5), q: 5, ok: false };
 }
 
+// XMP injection only exists for these containers; AVIF output carries no credit.
+const CREDITABLE = new Set(["jpeg", "png", "webp"]);
+
+/** Add the Exifo credit to the encoded bytes if asked. Never fails a job: on any error the output is returned as-is. */
+function withCredit(req: ProcessRequest, res: ProcessResult): ProcessResult {
+  if (!req.credit || !CREDITABLE.has(req.encode.format)) return res;
+  try {
+    const out = stripContainer(new Uint8Array(res.output), { remove: [], keepOrientation: true, xmp: buildCreditXmp() });
+    const output = toArrayBuffer(out.output);
+    return { ...res, output, bytes: output.byteLength };
+  } catch {
+    return res;
+  }
+}
+
 export async function processImage(req: ProcessRequest): Promise<ProcessResult> {
   let img = await renderPixels(req);
   if (!req.targetBytes) {
     const output = await encodeImage(img, req.encode);
-    return { output, width: img.width, height: img.height, quality: req.encode.quality, bytes: output.byteLength };
+    return withCredit(req, { output, width: img.width, height: img.height, quality: req.encode.quality, bytes: output.byteLength });
   }
   const target = req.targetBytes;
   let res = await encodeToTarget(img, req.encode, target);
@@ -210,5 +230,5 @@ export async function processImage(req: ProcessRequest): Promise<ProcessResult> 
     scaledTo = { width: w, height: h };
     res = await encodeToTarget(img, req.encode, target);
   }
-  return { output: res.buf, width: img.width, height: img.height, quality: res.q, bytes: res.buf.byteLength, scaledTo, reachedTarget: res.ok };
+  return withCredit(req, { output: res.buf, width: img.width, height: img.height, quality: res.q, bytes: res.buf.byteLength, scaledTo, reachedTarget: res.ok });
 }

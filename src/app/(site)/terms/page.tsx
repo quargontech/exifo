@@ -25,6 +25,7 @@ export default function Page() {
       />
       <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Terms of use" }]} />
       <PageIntro eyebrow="Legal" title="Terms of use" lead="Exifo is a privacy tool for image metadata. Use it responsibly." />
+      <p className="m-0 text-[13px] text-ink-3">Last updated 10 October 2026.</p>
       <Notice tone="info" className="max-w-[760px] text-sm">
         You are responsible for following platform rules and the law where you live on disclosing AI-generated content. Do not use Exifo to pass off synthetic
         media as real.
@@ -74,6 +75,15 @@ export default function Page() {
         <p>
           Exifo uses MozJPEG, libwebp, libavif and OxiPNG (via jSquash), the Content Credentials SDK (c2pa-web), exifr, fflate, pdf-lib, heic2any and Leaflet.
           Map data © OpenStreetMap contributors. Each component is used under its own licence.
+        </p>
+
+        <h2>Governing law</h2>
+        <p>These terms are governed by the laws of India, without regard to conflict-of-law rules.</p>
+
+        <h2>Contact</h2>
+        <p>
+          Questions about these terms can be sent to <a href="mailto:hello@exifo.app">hello@exifo.app</a>. These terms may be updated; the date above shows when
+          they last changed.
         </p>
       </Prose>
     </Container>

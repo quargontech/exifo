@@ -173,11 +173,24 @@ function fmtExif(key: string, v: unknown): string | null {
   if (typeof v === "boolean") return v ? "Yes" : "No";
   if (Array.isArray(v)) return v.map((x) => (typeof x === "number" ? fmtNumber(x) : String(x))).join(", ");
   if (v instanceof Date) return v.toISOString();
+  if (v && typeof v === "object") {
+    // Typed arrays (Int16Array…) and array-like objects ({"0":1,"1":120}) → a plain comma list.
+    const arr = ArrayBuffer.isView(v) ? Array.from(v as unknown as ArrayLike<number>) : asArrayLike(v as object);
+    if (arr) return arr.map((x) => (typeof x === "number" ? fmtNumber(x) : String(x))).join(", ") || null;
+  }
   try {
     return truncate(JSON.stringify(v), 400);
   } catch {
     return String(v);
   }
+}
+
+/** Values of an object whose keys are exactly 0..n-1, else null. */
+function asArrayLike(o: object): unknown[] | null {
+  const keys = Object.keys(o);
+  if (!keys.length) return null;
+  for (let i = 0; i < keys.length; i++) if (keys[i] !== String(i)) return null;
+  return keys.map((k) => (o as Record<string, unknown>)[k]);
 }
 
 function dms(v: unknown): number | undefined {

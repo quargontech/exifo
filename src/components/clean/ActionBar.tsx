@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { hasRemovable, useClean } from "@/store/clean";
 import { useFiles } from "@/store/files";
+import { ShareExifo } from "@/components/ShareExifo";
 
 export function ActionBar() {
   const files = useFiles((s) => s.files);
@@ -53,6 +54,7 @@ export function ActionBar() {
 
   return (
     <>
+      {cleaned > 0 && <ShareExifo />}
       <section
         aria-label="Batch actions"
         className="relative hidden flex-wrap items-center justify-between gap-x-5 gap-y-3 overflow-hidden rounded-2xl border border-line bg-surface py-3 pl-5 pr-3 lg:flex"
