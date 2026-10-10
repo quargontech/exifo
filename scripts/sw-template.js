@@ -7,10 +7,23 @@ const SHARE_CACHE = "exifo-share-v1";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(APP_CACHE)
-      .then((cache) => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting()),
+    caches.open(APP_CACHE).then(async (cache) => {
+      // Cache files one at a time and tolerate failures: a single 404 or redirect (which
+      // differs between hosts) must not fail the whole install, or the worker never activates.
+      await Promise.all(
+        PRECACHE.map(async (url) => {
+          try {
+            const res = await fetch(url, { cache: "reload" });
+            if (!res.ok) return;
+            // A redirected response cannot be stored directly; copy it into a clean one.
+            await cache.put(url, res.redirected ? new Response(await res.blob(), { status: 200, headers: res.headers }) : res);
+          } catch {
+            /* skip an unreachable file */
+          }
+        }),
+      );
+      await self.skipWaiting();
+    }),
   );
 });
 

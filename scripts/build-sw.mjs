@@ -24,7 +24,7 @@ const urls = [];
 for (const f of files.sort()) {
   const rel = path.relative(OUT, f).split(path.sep).join("/");
   if (rel === "sw.js" || rel.endsWith(".map") || rel.endsWith(".wasm") || rel.startsWith("wasm/") || rel.startsWith("__shared")) continue;
-  if (rel === "404.html" || rel === "robots.txt") continue;
+  if (rel === "404.html" || rel === "404/index.html" || rel === "robots.txt") continue;
   if (rel.startsWith("og/") || rel.startsWith("icons/exifo-logo") || rel === "_headers" || rel === "robots.txt" || rel === "sitemap.xml") continue;
   hash.update(rel).update(fs.readFileSync(f));
   if (rel === "index.html") urls.push("/");
