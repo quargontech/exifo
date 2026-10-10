@@ -80,7 +80,7 @@ The site is plain static files in `out/`.
 - **Cloudflare Pages:** build command `npm run build`, output directory `out`. `public/_headers` sets security and cache headers.
 - **Anything else:** serve `out/` with `/x/` resolving to `/x/index.html`.
 
-Environment variables (see `.env.example`; both are read at build time, so redeploy after changing them):
+Environment variables (see `.env.example`; both are read at build time, so redeploy after changing them). `.env.production` holds the production defaults and sets the GA ID; a variable set in the hosting dashboard overrides it:
 
 | Variable               | Purpose                                                                           |
 | ---------------------- | --------------------------------------------------------------------------------- |
@@ -99,7 +99,7 @@ Google Analytics 4 is optional and consent-based (`src/lib/analytics.ts`, `src/c
 - Page views, including client-side navigation between tools, come from GA4's enhanced measurement (on by default for a web stream). No custom events are sent, and files, file names and metadata are never part of any request.
 - The Privacy page and the FAQ describe analytics only when it is configured.
 
-**On Vercel:** in Google Analytics create a GA4 property and a Web data stream for your domain and copy its Measurement ID. In Vercel open the project, go to **Settings → Environment Variables**, add `NEXT_PUBLIC_GA_ID` for Production, then redeploy.
+The production Measurement ID is set in `.env.production`, so every production build (Vercel, Cloudflare or local `npm run build`) includes analytics; `npm run dev` does not. To use a different property, change it there or set `NEXT_PUBLIC_GA_ID` in the host's environment variables (for example Vercel **Settings → Environment Variables**), which takes precedence. To ship without analytics, remove the line from `.env.production`.
 
 ## PWA
 
