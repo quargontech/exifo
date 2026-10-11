@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FORMAT_LABEL, FORMAT_MIME, FORMAT_EXT } from "@/lib/detect";
-import { downloadUrl } from "@/lib/download";
 import { formatBytes, formatDims, pluralize } from "@/lib/format";
 import { splitExt } from "@/lib/rename";
 import type { Descriptive } from "@/lib/report";
@@ -14,6 +13,7 @@ import { CloseIcon, DownloadIcon } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { QueueNotices } from "@/components/QueueNotices";
 import { SignalBadge, StatusBadge } from "@/components/ui/badges";
+import { FileActions, SaveToFolderButton } from "@/components/FileActions";
 import { Button } from "@/components/ui/button";
 import { Field, inputClass, selectClass, Switch } from "@/components/ui/controls";
 import { Notice } from "@/components/ui/notice";
@@ -241,6 +241,7 @@ export function EditTool() {
                   Download all (ZIP)
                 </Button>
               )}
+              <SaveToFolderButton getFiles={() => useEditResults.getState().finished(files.map((f) => f.id))} count={doneCount} />
               {!hasAnyField(fields) && <span className="text-[13px] text-ink-3">Fill in at least one field.</span>}
             </div>
           </section>
@@ -275,12 +276,7 @@ export function EditTool() {
                     </div>
                     {(r?.status === "error" || f.status === "error") && <div className="text-[13px] text-danger">{r?.error ?? f.error}</div>}
                   </div>
-                  {r?.status === "done" && r.url && (
-                    <Button variant="secondary" onClick={() => downloadUrl(r.url!, r.name!)}>
-                      <DownloadIcon size={18} />
-                      Download
-                    </Button>
-                  )}
+                  {r?.status === "done" && r.url && <FileActions blob={r.blob!} name={r.name!} url={r.url!} />}
                   <Button variant="ghost" size="icon" aria-label={`Remove ${f.name}`} onClick={() => remove(f.id)}>
                     <CloseIcon size={18} />
                   </Button>

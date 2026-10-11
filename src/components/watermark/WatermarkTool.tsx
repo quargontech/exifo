@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { autoFormat, OUT_LABEL, OUT_MIME, type OutFormat } from "@/lib/codecs";
 import { cn } from "@/lib/cn";
-import { downloadUrl } from "@/lib/download";
 import { formatBytes } from "@/lib/format";
 import type { Anchor, WatermarkSpec } from "@/lib/image-ops";
 import { ImageList } from "@/components/images/ImageList";
@@ -11,8 +10,8 @@ import { BatchBar, ImageToolFrame } from "@/components/images/ImageToolFrame";
 import { outName, runBatch, runJob, usePreview, useResultsHousekeeping, type BuildRequest } from "@/components/images/jobs";
 import { useCreditSetting } from "@/lib/credit";
 import { CreditToggle } from "@/components/images/CreditToggle";
-import { DownloadIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/badges";
+import { FileActions } from "@/components/FileActions";
 import { Button } from "@/components/ui/button";
 import { Field, inputClass, Segmented, selectClass, Switch } from "@/components/ui/controls";
 import { Notice } from "@/components/ui/notice";
@@ -244,10 +243,7 @@ export function WatermarkTool() {
             return (
               <>
                 <span className="font-mono text-[13px]">{formatBytes(r.info?.bytes ?? 0)}</span>
-                <Button variant="secondary" onClick={() => downloadUrl(r.url!, r.name!)}>
-                  <DownloadIcon size={18} />
-                  Download
-                </Button>
+                <FileActions blob={r.blob!} name={r.name!} url={r.url!} />
               </>
             );
           return null;
@@ -260,6 +256,7 @@ export function WatermarkTool() {
         runDisabled={!ready}
         onRun={run}
         runLabel="Watermark all"
+        getFiles={() => useWatermarkResults.getState().finished(files.map((f) => f.id))}
         onZip={() =>
           useWatermarkResults.getState().zip(
             files.map((f) => f.id),

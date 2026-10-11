@@ -7,7 +7,6 @@ import "react-image-crop/dist/ReactCrop.css";
 import * as Comlink from "comlink";
 import { OUT_LABEL, OUT_MIME, type EncodeSettings, type OutFormat } from "@/lib/codecs";
 import { cn } from "@/lib/cn";
-import { downloadUrl } from "@/lib/download";
 import { formatBytes, formatDims } from "@/lib/format";
 import type { Transform } from "@/lib/image-ops";
 import { stripWorker } from "@/lib/workers";
@@ -16,8 +15,9 @@ import { BatchBar, ImageToolFrame } from "@/components/images/ImageToolFrame";
 import { outName, runBatch, runJob, usePreview, useResultsHousekeeping, type BuildRequest } from "@/components/images/jobs";
 import { useCreditSetting } from "@/lib/credit";
 import { CreditToggle } from "@/components/images/CreditToggle";
-import { DownloadIcon, FlipHIcon, FlipVIcon, RotateCcwIcon, RotateCwIcon } from "@/components/icons";
+import { FlipHIcon, FlipVIcon, RotateCcwIcon, RotateCwIcon } from "@/components/icons";
 import { SignalBadge, StatusBadge } from "@/components/ui/badges";
+import { FileActions } from "@/components/FileActions";
 import { Button } from "@/components/ui/button";
 import { Field, inputClass, Segmented, selectClass, Switch } from "@/components/ui/controls";
 import { Notice } from "@/components/ui/notice";
@@ -476,10 +476,7 @@ export function ResizeTool() {
                     Lossless
                   </SignalBadge>
                 )}
-                <Button variant="secondary" onClick={() => downloadUrl(r.url!, r.name!)}>
-                  <DownloadIcon size={18} />
-                  Download
-                </Button>
+                <FileActions blob={r.blob!} name={r.name!} url={r.url!} />
               </>
             );
           return <span className="font-mono text-[13px] text-ink-3">→ {formatDims(plan(f).out.width, plan(f).out.height)}</span>;
@@ -491,6 +488,7 @@ export function ResizeTool() {
         busy={busy}
         onRun={run}
         runLabel={allLossless ? "Rotate all" : "Resize all"}
+        getFiles={() => useResizeResults.getState().finished(files.map((f) => f.id))}
         onZip={() =>
           useResizeResults.getState().zip(
             files.map((f) => f.id),

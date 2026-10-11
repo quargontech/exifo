@@ -34,6 +34,8 @@ interface CleanState {
   cleanAll: () => Promise<void>;
   comparePixels: (id: string) => Promise<void>;
   downloadZip: () => Promise<void>;
+  /** Cleaned files in list order, for sharing or saving to a folder. */
+  finishedFiles: () => { name: string; blob: Blob }[];
 }
 
 export const cleanName = (name: string, format: FileEntry["format"]) => {
@@ -119,10 +121,19 @@ export const useClean = create<CleanState>((set, get) => ({
     }
   },
 
+  finishedFiles() {
+    return useFiles.getState().files.flatMap((f) => {
+      const r = get().results[f.id];
+      return r?.status === "done" && r.result ? [{ name: r.result.outName, blob: r.result.blob }] : [];
+    });
+  },
+
   async downloadZip() {
     const files = useFiles.getState().files;
     const done = files.map((f) => ({ f, r: get().results[f.id] })).filter((x) => x.r?.status === "done" && x.r.result);
     if (!done.length) return;
+    // One cleaned file downloads as itself; a ZIP is only for two or more.
+    if (done.length === 1) return downloadBlob(done[0].r!.result!.blob, done[0].r!.result!.outName);
     const entries = await Promise.all(
       done.map(async ({ f, r }) => ({
         name: r!.result!.outName,

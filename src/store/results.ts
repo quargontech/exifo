@@ -22,7 +22,10 @@ export interface ResultsState<I> {
   fail: (id: string, error: string) => void;
   reset: (id?: string) => void;
   keepOnly: (ids: string[]) => void;
+  /** Download every finished result: the file itself when there is one, otherwise a ZIP named `zipName`. */
   zip: (order: string[], zipName: string) => Promise<void>;
+  /** Finished results in list order, for sharing or saving to a folder. */
+  finished: (order: string[]) => { name: string; blob: Blob }[];
 }
 
 export type ResultsStore<I> = UseBoundStore<StoreApi<ResultsState<I>>>;
@@ -57,10 +60,19 @@ export function createResults<I = Record<string, unknown>>(): ResultsStore<I> {
       for (const k of stale) if (all[k]?.url) URL.revokeObjectURL(all[k].url!);
       set({ results: Object.fromEntries(Object.entries(all).filter(([k]) => keep.has(k))) });
     },
+    finished(order) {
+      const all = get().results;
+      return order.flatMap((id) => {
+        const r = all[id];
+        return r?.status === "done" && r.blob && r.name ? [{ name: r.name, blob: r.blob }] : [];
+      });
+    },
     async zip(order, zipName) {
       const all = get().results;
       const done = order.map((id) => all[id]).filter((r): r is ToolResult<I> => r?.status === "done" && !!r.blob && !!r.name);
       if (!done.length) return;
+      // One finished file downloads as itself; a ZIP is only for two or more.
+      if (done.length === 1) return downloadBlob(done[0].blob!, done[0].name!);
       const entries = await Promise.all(done.map(async (r) => ({ name: r.name!, data: new Uint8Array(await r.blob!.arrayBuffer()) })));
       downloadBlob(await makeZip(entries), zipName);
     },

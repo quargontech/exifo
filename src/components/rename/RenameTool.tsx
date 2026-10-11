@@ -9,6 +9,7 @@ import { ImageToolFrame } from "@/components/images/ImageToolFrame";
 import { FileThumb } from "@/components/FileThumb";
 import { ArrowRightIcon, CloseIcon, DownloadIcon } from "@/components/icons";
 import { SignalBadge } from "@/components/ui/badges";
+import { SaveToFolderButton } from "@/components/FileActions";
 import { Button } from "@/components/ui/button";
 import { Field, inputClass, Switch } from "@/components/ui/controls";
 import { Notice } from "@/components/ui/notice";
@@ -57,6 +58,8 @@ export function RenameTool() {
     setZipping(true);
     try {
       const names = uniqueNames(rows.map((r) => r.to));
+      // The contents are unchanged, so one file is simply saved under its new name.
+      if (files.length === 1) return downloadBlob(files[0].file, names[0]);
       const entries = await Promise.all(
         files.map(async (f, i) => ({ name: names[i], data: new Uint8Array(await f.file.arrayBuffer()), lastModified: f.file.lastModified })),
       );
@@ -153,8 +156,9 @@ export function RenameTool() {
         <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
           <Button variant="primary" className="px-5" disabled={!files.length || zipping} onClick={download}>
             <DownloadIcon size={18} />
-            {zipping ? "Preparing ZIP…" : `Download ${files.length} renamed ${files.length === 1 ? "file" : "files"} (ZIP)`}
+            {files.length === 1 ? "Download renamed file" : zipping ? "Preparing ZIP…" : `Download ${files.length} renamed files (ZIP)`}
           </Button>
+          <SaveToFolderButton getFiles={() => uniqueNames(rows.map((r) => r.to)).map((name, i) => ({ name, blob: files[i].file }))} count={files.length} />
           <Button variant="ghost" onClick={clear}>
             Clear
           </Button>

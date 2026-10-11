@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { pluralize } from "@/lib/format";
 import { DownloadIcon } from "@/components/icons";
+import { SaveToFolderButton, ShareAllButton } from "@/components/FileActions";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress";
 import { hasRemovable, useClean } from "@/store/clean";
@@ -70,8 +71,9 @@ export function ActionBar() {
           </Button>
           <Button variant="secondary" disabled={!cleaned || zipping} onClick={zip}>
             <DownloadIcon size={18} />
-            {zipping ? "Preparing ZIP…" : "Download all (ZIP)"}
+            {cleaned === 1 ? "Download file" : zipping ? "Preparing ZIP…" : "Download all (ZIP)"}
           </Button>
+          <SaveToFolderButton getFiles={() => useClean.getState().finishedFiles()} count={cleaned} />
           <Button variant="primary" className="px-5" disabled={!ready || busy} loading={busy} onClick={() => cleanAll()}>
             {busy ? "Cleaning…" : "Clean all"}
           </Button>
@@ -81,9 +83,17 @@ export function ActionBar() {
       {/* Mobile: sticky bottom bar */}
       <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2.5 border-t border-line bg-surface px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
         {progress && <ProgressBar {...progress} className="absolute inset-x-0 top-0 h-1 rounded-none bg-transparent" />}
-        <Button variant="secondary" size="icon" className="h-12 w-12 rounded-xl" aria-label="Download all as ZIP" disabled={!cleaned || zipping} onClick={zip}>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="h-12 w-12 rounded-xl"
+          aria-label={cleaned === 1 ? "Download the cleaned file" : "Download all as ZIP"}
+          disabled={!cleaned || zipping}
+          onClick={zip}
+        >
           <DownloadIcon size={20} />
         </Button>
+        <ShareAllButton getFiles={() => useClean.getState().finishedFiles()} count={cleaned} className="h-12 w-12 rounded-xl" />
         <Button variant="ghost" className="h-12 rounded-xl px-3" onClick={clear}>
           Clear
         </Button>

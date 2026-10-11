@@ -124,6 +124,15 @@ export const CopyIcon = make(
     <path d="M5 15V6a2 2 0 0 1 2-2h9" />
   </>,
 );
+export const ShareIcon = make(
+  <>
+    <circle cx="18" cy="5" r="2.6" />
+    <circle cx="6" cy="12" r="2.6" />
+    <circle cx="18" cy="19" r="2.6" />
+    <path d="m8.4 13.3 7.2 4.4M15.6 6.3l-7.2 4.4" />
+  </>,
+);
+export const FolderIcon = make(<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.2h7.5A2.5 2.5 0 0 1 21 9.7v7.8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z" />);
 export const SearchIcon = make(
   <>
     <circle cx="11" cy="11" r="6.5" />

@@ -4,12 +4,12 @@ import { useMemo, useState } from "react";
 import { toStripOptions, willRemove } from "@/lib/clean-options";
 import { FORMAT_LABEL } from "@/lib/detect";
 import { formatBytes, formatDims, listJoin } from "@/lib/format";
-import { downloadUrl } from "@/lib/download";
 import { AnatomyStrip } from "@/components/AnatomyStrip";
 import { FileThumb } from "@/components/FileThumb";
 import { MetadataReport } from "@/components/MetadataReport";
-import { ChevronDownIcon, ChevronUpIcon, CloseIcon, DownloadIcon, InfoIcon } from "@/components/icons";
+import { ChevronDownIcon, ChevronUpIcon, CloseIcon, InfoIcon } from "@/components/icons";
 import { BlockChip, SignalBadge, StatusBadge, type Status } from "@/components/ui/badges";
+import { FileActions } from "@/components/FileActions";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
 import { SkeletonStrip, Spinner } from "@/components/ui/progress";
@@ -66,10 +66,7 @@ export function FileCard({ entry }: { entry: FileEntry }) {
   const c2paKeptButChanged = !!c2paBlock && !willRemoveIds.has(c2paBlock.id) && removable;
 
   const action = done ? (
-    <Button variant="secondary" className="w-full sm:w-auto" onClick={() => downloadUrl(done.url, done.outName)}>
-      <DownloadIcon size={18} />
-      Download
-    </Button>
+    <FileActions blob={done.blob} name={done.outName} url={done.url} className="w-full sm:w-auto" downloadClassName="flex-1 sm:flex-none" />
   ) : entry.status === "ready" && removable ? (
     <Button variant="primary" className="w-full px-[18px] sm:w-auto" disabled={cleaning} loading={cleaning} onClick={() => cleanOne(entry.id)}>
       {cleaning ? "Cleaning…" : "Clean"}

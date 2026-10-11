@@ -3,16 +3,15 @@
 import { useState } from "react";
 import { OUT_LABEL, OUT_MIME, type OutFormat } from "@/lib/codecs";
 import { FORMAT_LABEL } from "@/lib/detect";
-import { downloadUrl } from "@/lib/download";
 import { formatBytes } from "@/lib/format";
 import { ImageList } from "@/components/images/ImageList";
 import { BatchBar, ImageToolFrame } from "@/components/images/ImageToolFrame";
 import { outName, runBatch, runJob, useResultsHousekeeping, type BuildRequest } from "@/components/images/jobs";
 import { useCreditSetting } from "@/lib/credit";
 import { CreditToggle } from "@/components/images/CreditToggle";
-import { ArrowRightIcon, DownloadIcon } from "@/components/icons";
+import { ArrowRightIcon } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/badges";
-import { Button } from "@/components/ui/button";
+import { FileActions } from "@/components/FileActions";
 import { Field, Segmented, Switch } from "@/components/ui/controls";
 import { Notice } from "@/components/ui/notice";
 import { Slider } from "@/components/ui/slider";
@@ -121,10 +120,7 @@ export function ConvertTool() {
                 <span className="flex items-center gap-1.5 font-mono text-[13px]">
                   {FORMAT_LABEL[f.format]} <ArrowRightIcon size={14} /> {OUT_LABEL[format]} · {formatBytes(r.info?.bytes ?? 0)}
                 </span>
-                <Button variant="secondary" onClick={() => downloadUrl(r.url!, r.name!)}>
-                  <DownloadIcon size={18} />
-                  Download
-                </Button>
+                <FileActions blob={r.blob!} name={r.name!} url={r.url!} />
               </>
             );
           return null;
@@ -136,6 +132,7 @@ export function ConvertTool() {
         busy={busy}
         onRun={run}
         runLabel={`Convert to ${OUT_LABEL[format]}`}
+        getFiles={() => useConvertResults.getState().finished(files.map((f) => f.id))}
         onZip={() =>
           useConvertResults.getState().zip(
             files.map((f) => f.id),

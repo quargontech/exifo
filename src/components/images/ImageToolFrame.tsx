@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import type { OutFile } from "@/lib/file-actions";
 import type { ToolId } from "@/lib/tools";
 import { ACCEPT_IMAGES, Dropzone } from "@/components/Dropzone";
 import { DownloadIcon } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { QueueNotices } from "@/components/QueueNotices";
+import { SaveToFolderButton, ShareAllButton } from "@/components/FileActions";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
 import { ProgressBar } from "@/components/ui/progress";
@@ -67,7 +69,7 @@ function AiLabelNotice() {
   );
 }
 
-/** Bottom action bar: Clear, Download all (ZIP), primary action. */
+/** Bottom action bar: Clear, download (the file itself when one is done, a ZIP for more), primary action. */
 export function BatchBar({
   total,
   done,
@@ -77,6 +79,7 @@ export function BatchBar({
   onZip,
   zipDisabled,
   runDisabled,
+  getFiles,
 }: {
   total: number;
   done: number;
@@ -86,6 +89,8 @@ export function BatchBar({
   onZip: () => Promise<void>;
   zipDisabled?: boolean;
   runDisabled?: boolean;
+  /** Finished files, for Save to folder (desktop) and Share (phones). */
+  getFiles?: () => OutFile[];
 }) {
   const clear = useImages((s) => s.clear);
   const [zipping, setZipping] = useState(false);
@@ -115,8 +120,9 @@ export function BatchBar({
           </Button>
           <Button variant="secondary" disabled={!done || zipping || zipDisabled} onClick={zip}>
             <DownloadIcon size={18} />
-            {zipping ? "Preparing ZIP…" : "Download all (ZIP)"}
+            {done === 1 ? "Download file" : zipping ? "Preparing ZIP…" : "Download all (ZIP)"}
           </Button>
+          {getFiles && <SaveToFolderButton getFiles={getFiles} count={done} />}
           <Button variant="primary" className="px-5" disabled={busy || runDisabled || !total} loading={busy} onClick={onRun}>
             {busy ? "Working…" : runLabel}
           </Button>
@@ -128,12 +134,13 @@ export function BatchBar({
           variant="secondary"
           size="icon"
           className="h-12 w-12 rounded-xl"
-          aria-label="Download all as ZIP"
+          aria-label={done === 1 ? "Download the file" : "Download all as ZIP"}
           disabled={!done || zipping || zipDisabled}
           onClick={zip}
         >
           <DownloadIcon size={20} />
         </Button>
+        {getFiles && <ShareAllButton getFiles={getFiles} count={done} className="h-12 w-12 rounded-xl" />}
         <Button variant="ghost" className="h-12 rounded-xl px-3" onClick={clear}>
           Clear
         </Button>

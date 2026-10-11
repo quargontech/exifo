@@ -2,15 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { autoFormat, OUT_LABEL, OUT_MIME, type EncodeSettings, type OutFormat } from "@/lib/codecs";
-import { downloadUrl } from "@/lib/download";
 import { formatBytes } from "@/lib/format";
 import { BeforeAfter } from "@/components/images/BeforeAfter";
 import { ImageList } from "@/components/images/ImageList";
 import { BatchBar, ImageToolFrame } from "@/components/images/ImageToolFrame";
 import { outName, runBatch, runJob, usePreview, useResultsHousekeeping, type BuildRequest } from "@/components/images/jobs";
-import { DownloadIcon } from "@/components/icons";
 import { SignalBadge, StatusBadge } from "@/components/ui/badges";
-import { Button } from "@/components/ui/button";
+import { FileActions } from "@/components/FileActions";
 import { Field, inputClass, Segmented, selectClass, Switch } from "@/components/ui/controls";
 import { Notice } from "@/components/ui/notice";
 import { PreviewPlaceholder, Spinner } from "@/components/ui/progress";
@@ -270,10 +268,7 @@ export function CompressTool() {
                     Above target
                   </SignalBadge>
                 )}
-                <Button variant="secondary" onClick={() => downloadUrl(r.url!, r.name!)}>
-                  <DownloadIcon size={18} />
-                  Download
-                </Button>
+                <FileActions blob={r.blob!} name={r.name!} url={r.url!} />
               </>
             );
           }
@@ -286,6 +281,7 @@ export function CompressTool() {
         busy={busy}
         onRun={run}
         runLabel="Compress all"
+        getFiles={() => useCompressResults.getState().finished(files.map((f) => f.id))}
         onZip={() =>
           useCompressResults.getState().zip(
             files.map((f) => f.id),
