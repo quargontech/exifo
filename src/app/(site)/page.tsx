@@ -12,7 +12,7 @@ import { Container } from "@/components/site/Container";
 import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = pageMetadata({
-  title: "Exifo: Remove EXIF and Metadata from Photos, Free and Private",
+  title: "Exifo: Remove EXIF and Photo Metadata, Free and Private",
   absoluteTitle: true,
   description:
     "Remove EXIF, GPS and AI metadata from photos without losing quality, then check, edit, compress and convert images. Free and private: nothing is uploaded.",
@@ -198,11 +198,11 @@ export default function HomePage() {
             </p>
           </div>
           <div className="flex flex-col gap-4">
-            <h3 className="m-0 font-mono text-[11px] font-normal tracking-[0.08em] text-ink-3">METADATA TOOLS</h3>
+            <h3 className="m-0 font-mono text-xs font-normal tracking-[0.08em] text-ink-3">METADATA TOOLS</h3>
             <ToolCards ids={["clean", "inspect", "check", "edit", "compare"]} className="xl:[grid-template-columns:repeat(5,minmax(0,1fr))]" />
           </div>
           <div className="flex flex-col gap-4">
-            <h3 className="m-0 font-mono text-[11px] font-normal tracking-[0.08em] text-ink-3">IMAGE TOOLS</h3>
+            <h3 className="m-0 font-mono text-xs font-normal tracking-[0.08em] text-ink-3">IMAGE TOOLS</h3>
             <ToolCards ids={["compress", "convert", "resize", "watermark", "rename", "pdf"]} className="lg:[grid-template-columns:repeat(3,minmax(0,1fr))]" />
           </div>
         </Container>

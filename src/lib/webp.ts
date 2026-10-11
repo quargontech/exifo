@@ -213,6 +213,10 @@ export function stripWebp(b: Uint8Array, opts: StripOptions): ContainerStrip {
     if (i === lastImage) out.push(...extras);
   });
   if (lastImage < 0) out.push(...extras);
+  // The container expects EXIF before XMP; a new XMP chunk can land ahead of a kept EXIF chunk.
+  const exifAt = out.map((x) => x.fourcc).lastIndexOf("EXIF");
+  const xmpAt = out.findIndex((x) => x.fourcc === "XMP ");
+  if (xmpAt >= 0 && exifAt > xmpAt) out.splice(exifAt, 0, ...out.splice(xmpAt, 1));
   // A simple file must be extended before it can carry EXIF or XMP.
   const hasMeta = out.some((x) => x.fourcc === "EXIF" || x.fourcc === "XMP ");
   if (!extended && hasMeta) {

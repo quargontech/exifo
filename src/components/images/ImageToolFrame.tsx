@@ -7,6 +7,7 @@ import { DownloadIcon } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { QueueNotices } from "@/components/QueueNotices";
 import { Button } from "@/components/ui/button";
+import { Notice } from "@/components/ui/notice";
 import { ProgressBar } from "@/components/ui/progress";
 import { ShareExifo } from "@/components/ShareExifo";
 import { pluralize } from "@/lib/format";
@@ -45,10 +46,24 @@ export function ImageToolFrame({
         <>
           <Dropzone key="compact" onFiles={onFiles} accept={ACCEPT_IMAGES} variant="compact" hint={h} />
           <QueueNotices notices={notices} onDismiss={dismiss} />
+          {tool !== "pdf" && <AiLabelNotice />}
           {children}
         </>
       )}
     </>
+  );
+}
+
+/** Re-encoding drops AI labels and Content Credentials; say so, as Clean does. */
+function AiLabelNotice() {
+  const files = useImages((s) => s.files);
+  const marked = files.filter((f) => f.aiMarker);
+  if (!marked.length) return null;
+  return (
+    <Notice tone="info">
+      {marked.length === 1 ? `${marked[0].name} carries` : `${marked.length} files carry`} an AI label or Content Credentials. Re-encoding removes them. You
+      stay responsible for disclosing AI-generated content where platform rules or local law require it.
+    </Notice>
   );
 }
 
@@ -122,8 +137,14 @@ export function BatchBar({
         <Button variant="ghost" className="h-12 rounded-xl px-3" onClick={clear}>
           Clear
         </Button>
-        <Button variant="primary" className="h-12 flex-1 rounded-xl text-base" disabled={busy || runDisabled || !total} loading={busy} onClick={onRun}>
-          {busy ? `Working · ${done} of ${total}` : `${runLabel} · ${pluralize(total, "file")}`}
+        <Button
+          variant="primary"
+          className="h-12 min-w-0 flex-1 shrink rounded-xl text-base"
+          disabled={busy || runDisabled || !total}
+          loading={busy}
+          onClick={onRun}
+        >
+          <span className="truncate">{busy ? `Working · ${done} of ${total}` : `${runLabel} · ${pluralize(total, "file")}`}</span>
         </Button>
       </div>
     </>

@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import * as Comlink from "comlink";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
+import { sanitizeFileName } from "@/lib/rename";
 import { FORMAT_LABEL } from "@/lib/detect";
 import { downloadBlob } from "@/lib/download";
 import { formatBytes, formatDims, pluralize } from "@/lib/format";
@@ -47,6 +48,7 @@ function Row({ f, index, total, move, busy }: { f: ImageEntry; index: number; to
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate font-mono text-[13px] font-semibold">{f.name}</span>
         <span className="font-mono text-xs text-ink-3">{[FORMAT_LABEL[f.format], formatDims(f.width, f.height), formatBytes(f.size)].join(" · ")}</span>
+        {f.animated && <span className="text-xs text-tag-deep">Animated: only the first frame is used.</span>}
       </div>
       <Button variant="ghost" size="iconSm" aria-label={`Move ${f.name} up`} disabled={index === 0} onClick={() => move(index, index - 1)}>
         <ChevronUpIcon size={16} />
@@ -123,7 +125,7 @@ export function PdfTool() {
       setState({ busy: true, step: "Writing the PDF…", at: files.length });
       const title = name.replace(/\.pdf$/i, "").trim();
       const pdf = await buildPdf(images, { pageSize, orientation, margin, title: title || undefined });
-      const fileName = `${title || "images"}.pdf`;
+      const fileName = `${sanitizeFileName(title) || "images"}.pdf`;
       downloadBlob(new Blob([pdf as BlobPart], { type: "application/pdf" }), fileName);
       setState({ done: `${fileName} · ${pluralize(images.length, "page")} · ${formatBytes(pdf.length)}` });
     } catch (err) {
@@ -135,8 +137,8 @@ export function PdfTool() {
 
   return (
     <ImageToolFrame tool="pdf" emptyTitle="Drop images to combine into a PDF">
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,1fr)]">
-        <section aria-label="Pages" className="flex flex-col gap-2 rounded-2xl border border-line bg-surface p-2 sm:p-3">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,1fr)]">
+        <section aria-label="Pages" className="flex min-w-0 flex-col gap-2 rounded-2xl border border-line bg-surface p-2 sm:p-3">
           <div className="flex items-center justify-between px-2 pt-1">
             <h2 className="m-0 text-[15px] font-semibold">Pages</h2>
             <span className="text-[13px] text-ink-3">Drag to reorder</span>
@@ -152,7 +154,7 @@ export function PdfTool() {
           </DndContext>
         </section>
 
-        <section aria-label="Settings" className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 sm:p-5">
+        <section aria-label="Settings" className="flex min-w-0 flex-col gap-4 rounded-2xl border border-line bg-surface p-4 sm:p-5">
           <Field label="Page size">
             <Segmented
               label="Page size"
@@ -193,7 +195,7 @@ export function PdfTool() {
             checked={clean}
             onChange={setClean}
             label="Remove metadata from each image"
-            description="EXIF, GPS and other blocks are not embedded in the PDF."
+            description={clean ? "EXIF, GPS and other blocks are not embedded in the PDF." : "EXIF, GPS and other blocks stay inside the embedded images."}
           />
           <Field label="File name" htmlFor="pdf-name">
             <input id="pdf-name" className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />

@@ -41,7 +41,7 @@ export const TOOLS: Tool[] = [
     icon: CleanIcon,
     title: "Clean",
     subtitle: "Remove metadata without touching a single pixel.",
-    seoTitle: "Remove EXIF Data and Metadata from Photos, Losslessly",
+    seoTitle: "Remove EXIF and Metadata from Photos, Losslessly",
     description:
       "Remove EXIF, GPS location, XMP, IPTC, Content Credentials and AI prompts from JPEG, PNG and WebP. Free, lossless and private: nothing is uploaded.",
     blurb: "Remove EXIF, GPS, XMP, IPTC and AI data. The image data is copied byte for byte.",
@@ -120,7 +120,7 @@ export const TOOLS: Tool[] = [
     lossy: true,
     title: "Convert",
     subtitle: "Change format, including HEIC to JPG.",
-    seoTitle: "HEIC to JPG Converter: Convert HEIC, WebP, AVIF and PNG",
+    seoTitle: "HEIC to JPG Converter, plus WebP, AVIF and PNG",
     description:
       "Convert HEIC, AVIF, WebP, GIF, BMP, PNG and JPEG to JPG, PNG, WebP or AVIF. Free, private and in batches: photos are converted on your device.",
     blurb: "HEIC to JPG and more: JPEG, PNG, WebP and AVIF out.",
@@ -134,7 +134,7 @@ export const TOOLS: Tool[] = [
     lossy: true,
     title: "Resize and crop",
     subtitle: "Change dimensions, crop, rotate and flip.",
-    seoTitle: "Resize and Crop Images Online: Instagram, Story and Passport Sizes",
+    seoTitle: "Resize and Crop Images: Instagram, Story, Passport",
     description:
       "Resize images by pixels, percent or longest side, crop freely or to 1:1, 4:5 and 9:16, and rotate JPEGs losslessly. Free and private, in your browser.",
     blurb: "Exact sizes, social presets, free crop and lossless JPEG rotation.",

@@ -17,6 +17,11 @@ export interface DescriptiveFields {
   keywords?: string[];
   /** ISO date, e.g. 2026-08-14 or 2026-08-14T17:42:09. */
   dateCreated?: string;
+  /**
+   * IPTC digital source type carried over from the file's existing XMP (for example the
+   * trainedAlgorithmicMedia AI label), so writing new fields never drops it.
+   */
+  digitalSourceType?: string;
 }
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -56,13 +61,15 @@ export function buildXmpPacket(f: DescriptiveFields): string {
   list("dc:subject", "Bag", f.keywords);
   simple("photoshop:Credit", f.credit);
   simple("photoshop:DateCreated", f.dateCreated);
+  simple("Iptc4xmpExt:DigitalSourceType", f.digitalSourceType);
   return [
     `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>`,
     `<x:xmpmeta xmlns:x="adobe:ns:meta/">`,
     ` <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">`,
     `  <rdf:Description rdf:about=""`,
     `    xmlns:dc="http://purl.org/dc/elements/1.1/"`,
-    `    xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/">`,
+    `    xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/"`,
+    `    xmlns:Iptc4xmpExt="http://iptc.org/std/Iptc4xmpExt/2008-02-29/">`,
     ...lines,
     `  </rdf:Description>`,
     ` </rdf:RDF>`,

@@ -18,7 +18,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         q: "Does Exifo work offline?",
-        a: "Yes. After your first visit the app is stored by your browser, so the tools keep working without a connection. Image codecs are stored the first time a tool uses them.",
+        a: "Yes. After your first visit the app is stored by your browser, so the tools keep working without a connection. The image codecs are saved with it; the two largest (the AVIF encoder and the Content Credentials checker) download in the background a few seconds later.",
       },
       {
         q: "Does Exifo track me or keep my files?",

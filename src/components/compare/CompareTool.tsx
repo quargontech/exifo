@@ -26,6 +26,18 @@ interface Slot {
   error?: string;
 }
 
+/** Below sm, table rows stack: the name, then labelled A and B values, then the status. */
+const STACK = {
+  table: "max-sm:block",
+  head: "max-sm:hidden",
+  body: "max-sm:block",
+  row: "max-sm:block max-sm:py-2.5",
+  cell: "max-sm:block max-sm:py-0.5 max-sm:pr-0",
+  a: "max-sm:before:mr-2 max-sm:before:font-sans max-sm:before:font-semibold max-sm:before:text-ink-3 max-sm:before:content-['A']",
+  b: "max-sm:before:mr-2 max-sm:before:font-sans max-sm:before:font-semibold max-sm:before:text-ink-3 max-sm:before:content-['B']",
+  status: "max-sm:block max-sm:pt-1 max-sm:text-left",
+};
+
 const STATUS_TEXT: Record<DiffStatus, string> = { "only-a": "Only in A", "only-b": "Only in B", different: "Different", same: "Same" };
 
 function StatusPill({ s }: { s: DiffStatus }) {
@@ -75,7 +87,12 @@ export function CompareTool() {
   const onFiles = useCallback(
     (files: File[], target?: "a" | "b") => {
       setNotice(null);
-      if (files.length >= 2 && !target) {
+      const used = files.length >= 2 && !target ? 2 : 1;
+      if (files.length > used) {
+        const extra = files.length - used;
+        setNotice(`Compare looks at two files at a time, so ${extra === 1 ? "1 other file was" : `${extra} other files were`} not added.`);
+      }
+      if (used === 2) {
         void load(files[0], setA);
         void load(files[1], setB);
         return;
@@ -184,8 +201,8 @@ export function CompareTool() {
           <section aria-label="Blocks" className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 sm:p-5">
             <h2 className="m-0 text-[17px] font-semibold">Blocks</h2>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[480px] border-collapse text-left text-[13px]">
-                <thead>
+              <table className={cn("w-full border-collapse text-left text-[13px] sm:min-w-[480px]", STACK.table)}>
+                <thead className={STACK.head}>
                   <tr className="text-ink-2">
                     <th scope="col" className="pb-2 font-semibold">
                       Block
@@ -201,7 +218,7 @@ export function CompareTool() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="font-mono text-xs">
+                <tbody className={cn("font-mono text-xs", STACK.body)}>
                   {blockDiff.length === 0 && (
                     <tr className="border-t border-line">
                       <td colSpan={4} className="py-2.5 font-sans text-ink-2">
@@ -210,11 +227,11 @@ export function CompareTool() {
                     </tr>
                   )}
                   {blockDiff.map((r) => (
-                    <tr key={r.label} className="border-t border-line">
-                      <td className="py-2.5 pr-3">{r.label}</td>
-                      <td className="py-2.5 pr-3 text-ink-2">{r.a ?? "–"}</td>
-                      <td className="py-2.5 pr-3 text-ink-2">{r.b ?? "–"}</td>
-                      <td className="py-2.5 text-right">
+                    <tr key={r.label} className={cn("border-t border-line", STACK.row)}>
+                      <td className={cn("py-2.5 pr-3", STACK.cell)}>{r.label}</td>
+                      <td className={cn("py-2.5 pr-3 text-ink-2", STACK.cell, STACK.a)}>{r.a ?? "–"}</td>
+                      <td className={cn("py-2.5 pr-3 text-ink-2", STACK.cell, STACK.b)}>{r.b ?? "–"}</td>
+                      <td className={cn("py-2.5 text-right", STACK.status)}>
                         <StatusPill s={r.status} />
                       </td>
                     </tr>
@@ -243,8 +260,8 @@ export function CompareTool() {
               />
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] border-collapse text-left text-[13px]">
-                <thead>
+              <table className={cn("w-full border-collapse text-left text-[13px] sm:min-w-[640px]", STACK.table)}>
+                <thead className={STACK.head}>
                   <tr className="text-ink-2">
                     <th scope="col" className="w-[22%] pb-2 font-semibold">
                       Field
@@ -260,7 +277,7 @@ export function CompareTool() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="font-mono text-xs">
+                <tbody className={cn("font-mono text-xs", STACK.body)}>
                   {shownFields.length === 0 && (
                     <tr className="border-t border-line">
                       <td colSpan={4} className="py-2.5 font-sans text-ink-2">
@@ -269,18 +286,18 @@ export function CompareTool() {
                     </tr>
                   )}
                   {shownFields.map((r, i) => (
-                    <tr key={i} className="border-t border-line align-top">
-                      <td className="py-2.5 pr-3">
-                        <div className="font-sans text-[11px] text-ink-3">{r.group}</div>
+                    <tr key={i} className={cn("border-t border-line align-top", STACK.row)}>
+                      <td className={cn("py-2.5 pr-3", STACK.cell)}>
+                        <div className="font-sans text-xs text-ink-3">{r.group}</div>
                         {r.key}
                       </td>
-                      <td className={cn("py-2.5 pr-3 [overflow-wrap:anywhere]", r.a === undefined && "text-ink-3")}>
+                      <td className={cn("py-2.5 pr-3 [overflow-wrap:anywhere]", STACK.cell, STACK.a, r.a === undefined && "text-ink-3")}>
                         {r.a === undefined ? "–" : truncate(r.a, 240)}
                       </td>
-                      <td className={cn("py-2.5 pr-3 [overflow-wrap:anywhere]", r.b === undefined && "text-ink-3")}>
+                      <td className={cn("py-2.5 pr-3 [overflow-wrap:anywhere]", STACK.cell, STACK.b, r.b === undefined && "text-ink-3")}>
                         {r.b === undefined ? "–" : truncate(r.b, 240)}
                       </td>
-                      <td className="py-2.5 text-right">
+                      <td className={cn("py-2.5 text-right", STACK.status)}>
                         <StatusPill s={r.status} />
                       </td>
                     </tr>

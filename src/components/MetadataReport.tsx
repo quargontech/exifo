@@ -66,8 +66,9 @@ export function MetadataReport({ report, limit = 14, inspectHref }: { report: Re
   return (
     <div className="flex flex-col gap-2">
       <div className="overflow-x-auto rounded-xl border border-line">
-        <table className="w-full min-w-[560px] border-collapse text-left text-[13px]">
-          <thead>
+        {/* Below sm each row stacks: block, field name, then the value. */}
+        <table className="w-full border-collapse text-left text-[13px] max-sm:block sm:min-w-[560px]">
+          <thead className="max-sm:hidden">
             <tr className="bg-ground dark:bg-surface-2">
               <th scope="col" className="px-3.5 py-2.5 font-semibold text-ink-2">
                 Block
@@ -80,12 +81,14 @@ export function MetadataReport({ report, limit = 14, inspectHref }: { report: Re
               </th>
             </tr>
           </thead>
-          <tbody className="font-mono text-xs">
+          <tbody className="font-mono text-xs max-sm:block">
             {rows.map((r, i) => (
-              <tr key={i} className="border-t border-line align-top">
-                <td className="whitespace-nowrap px-3.5 py-2.5 text-ink-2">{r.block}</td>
-                <td className="whitespace-nowrap px-3.5 py-2.5">{r.key}</td>
-                <td className={cn("px-3.5 py-2.5 [overflow-wrap:anywhere]", r.ai && "font-semibold text-tag-deep")}>{truncate(r.value, 220)}</td>
+              <tr key={i} className="border-t border-line align-top max-sm:block max-sm:first:border-t-0 max-sm:px-3.5 max-sm:py-2.5">
+                <td className="whitespace-nowrap px-3.5 py-2.5 text-ink-2 max-sm:block max-sm:p-0 max-sm:text-xs">{r.block}</td>
+                <td className="whitespace-nowrap px-3.5 py-2.5 max-sm:block max-sm:whitespace-normal max-sm:p-0 max-sm:font-semibold">{r.key}</td>
+                <td className={cn("px-3.5 py-2.5 [overflow-wrap:anywhere] max-sm:block max-sm:p-0 max-sm:pt-0.5", r.ai && "font-semibold text-tag-deep")}>
+                  {truncate(r.value, 220)}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -28,12 +28,13 @@ const mul = (x: M, y: M): M => [x[0] * y[0] + x[1] * y[2], x[0] * y[1] + x[1] * 
 const ROT: Record<number, M> = { 0: [1, 0, 0, 1], 90: [0, -1, 1, 0], 180: [-1, 0, 0, -1], 270: [0, 1, -1, 0] };
 
 /**
- * Orientation after applying, to the displayed image, a horizontal / vertical flip
- * followed by a clockwise rotation (the same order the canvas pipeline uses).
+ * Orientation after applying, to the displayed image, a clockwise rotation followed by a
+ * horizontal / vertical flip of the rotated result (what the user sees on screen; the canvas
+ * pipeline in image-ops uses the same order).
  */
 export function composeOrientation(current: number, rotate: 0 | 90 | 180 | 270, flipH = false, flipV = false): number {
   const flip: M = [flipH ? -1 : 1, 0, 0, flipV ? -1 : 1];
-  const m = mul(mul(ROT[rotate], flip), ORIENT[current] ?? ORIENT[1]);
+  const m = mul(mul(flip, ROT[rotate]), ORIENT[current] ?? ORIENT[1]);
   for (const [o, t] of Object.entries(ORIENT)) if (t.every((v, i) => v === m[i])) return Number(o);
   return 1;
 }

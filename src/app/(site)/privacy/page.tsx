@@ -103,10 +103,11 @@ export default function Page() {
         <h2>Metadata you download</h2>
         <p>
           Cleaned files contain only the blocks you chose to keep. Re-encoded files from the image tools (Compress, Convert, Resize and Watermark) contain no
-          metadata except, where needed, the information required to display the image correctly, plus a small{" "}
-          <strong>“Software: Exifo (exifo.app)” credit</strong> written into the file. The credit is on by default, is visible in Inspect and any EXIF viewer,
-          and can be switched off with the <strong>Add Exifo credit</strong> toggle in each of those tools. It is only added to JPEG, PNG and WebP output, never
-          to AVIF, and never to cleaned files. Exported reports contain the metadata of the files you exported; treat them as you would the original files.
+          metadata except, where needed, the information required to display the image correctly, plus a short{" "}
+          <strong>XMP credit naming Exifo (exifo.app) as the creator tool</strong>, about 0.4 KB. The credit is on by default, is visible in Inspect and any
+          EXIF viewer, and can be switched off with the <strong>Add Exifo credit</strong> toggle in each of those tools. It is only added to JPEG, PNG and WebP
+          output, never to AVIF, and never to cleaned files. Exported reports contain the metadata of the files you exported; treat them as you would the
+          original files.
         </p>
 
         <h2>Contact</h2>

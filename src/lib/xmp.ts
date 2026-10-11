@@ -130,8 +130,22 @@ export function xmpCoordinate(v: string | undefined): number | undefined {
   return Number.isFinite(deg) ? deg : undefined;
 }
 
-/** Location-like property names, removed from XMP when the user removes location. */
-export const isLocationProp = (qname: string) => /:(GPS|Gps)\w*$|:\w*(Latitude|Longitude|Altitude)$/.test(qname);
+/** Location-like property names, removed from XMP when the user removes location: GPS and written place names. */
+export const isLocationProp = (qname: string) =>
+  /:(GPS|Gps)\w*$|:\w*(Latitude|Longitude|Altitude)$/.test(qname) ||
+  /:(City|State|Country|CountryCode|CountryName|ProvinceState|Sublocation|WorldRegion|Location|LocationCreated|LocationShown)$/.test(qname);
+
+/** Camera, lens and software properties, removed from XMP with "Device details". */
+export const isDeviceProp = (qname: string) =>
+  /:(Make|Model|Software|ProcessingSoftware|CreatorTool|softwareAgent|HostComputer|SerialNumber|BodySerialNumber|CameraSerialNumber|InternalSerialNumber|LensSerialNumber|Lens|LensID|LensInfo|LensMake|LensModel|LensSpecification|OwnerName|CameraOwnerName|UniqueCameraModel|Firmware)$/.test(
+    qname,
+  );
+
+/** Date and time properties (including edit-history timestamps), removed from XMP with "Dates". */
+export const isDateProp = (qname: string) =>
+  /:(CreateDate|ModifyDate|MetadataDate|DateCreated|DateTimeOriginal|DateTimeDigitized|DateTime|DigitalCreationDate|DigitalCreationTime|DateAcquired|when|GPSTimeStamp|GPSDateStamp|GPSDateTime)$/.test(
+    qname,
+  );
 
 /** Remove properties matching `test` from an XMP packet (attributes and elements). */
 export function removeXmpProps(xml: string, test: (qname: string) => boolean): { xml: string; removed: number } {

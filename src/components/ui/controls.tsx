@@ -143,7 +143,8 @@ export function Field({
   );
 }
 
-export const inputClass = "h-11 w-full rounded-[10px] border border-line-strong bg-surface px-3.5 text-[15px] text-ink placeholder:text-ink-3 dark:bg-ground";
+export const inputClass =
+  "h-11 w-full rounded-[10px] border border-line-strong bg-surface px-3.5 text-base text-ink placeholder:text-ink-3 sm:text-[15px] dark:bg-ground";
 
 export const selectClass =
-  "h-11 w-full appearance-none rounded-[10px] border border-line-strong bg-surface px-3.5 pr-9 text-[15px] text-ink dark:bg-ground bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%235F6878%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')] bg-[length:16px] bg-[right_12px_center] bg-no-repeat";
+  "h-11 w-full appearance-none rounded-[10px] border border-line-strong bg-surface px-3.5 pr-9 text-base text-ink sm:text-[15px] dark:bg-ground bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%235F6878%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')] bg-[length:16px] bg-[right_12px_center] bg-no-repeat";

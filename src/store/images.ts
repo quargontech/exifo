@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { hasAiOrProvenanceMarker } from "@/lib/ai-signals";
 import { FORMAT_LABEL, FORMAT_MIME, type AnyImageFormat } from "@/lib/detect";
 import { formatBytes } from "@/lib/format";
 import { probe, uprightSize } from "@/lib/probe";
@@ -22,6 +23,10 @@ export interface ImageEntry {
   height: number;
   orientation: number;
   hasAlpha: boolean;
+  /** More than one frame; re-encoding keeps only the first. */
+  animated: boolean;
+  /** Carries an AI label or Content Credentials, which re-encoding removes. */
+  aiMarker: boolean;
   dateTaken?: string;
   make?: string;
   model?: string;
@@ -89,6 +94,8 @@ export const useImages = create<ImagesState>((set, get) => ({
         height: up.height,
         orientation: p.orientation,
         hasAlpha: !!p.hasAlpha,
+        animated: !!p.animated,
+        aiMarker: hasAiOrProvenanceMarker(head),
         dateTaken: p.dateTaken,
         make: p.make,
         model: p.model,

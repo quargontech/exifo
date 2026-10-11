@@ -87,8 +87,16 @@ export function ActionBar() {
         <Button variant="ghost" className="h-12 rounded-xl px-3" onClick={clear}>
           Clear
         </Button>
-        <Button variant="primary" className="h-12 flex-1 rounded-xl text-base" disabled={!ready || busy} loading={busy} onClick={() => cleanAll()}>
-          {busy ? "Cleaning…" : ready ? `Clean all · ${pluralize(ready, "file")} ready` : cleaned ? `${cleaned} cleaned` : "Clean all"}
+        <Button
+          variant="primary"
+          className="h-12 min-w-0 flex-1 shrink rounded-xl text-base"
+          disabled={!ready || busy}
+          loading={busy}
+          onClick={() => cleanAll()}
+        >
+          <span className="truncate">
+            {busy ? "Cleaning…" : ready ? `Clean all · ${pluralize(ready, "file")} ready` : cleaned ? `${cleaned} cleaned` : "Clean all"}
+          </span>
         </Button>
       </div>
     </>

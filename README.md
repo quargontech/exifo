@@ -103,7 +103,7 @@ The production Measurement ID is set in `.env.production`, so every production b
 
 ## PWA
 
-The manifest declares a share target (Android: share images to Exifo, handled entirely in the service worker) and file handlers (installed desktop Chromium: “Open with Exifo”). The app works offline after the first visit; WASM codecs are cached the first time a tool uses them.
+The manifest declares a share target (Android: share images to Exifo, handled entirely in the service worker) and file handlers (installed desktop Chromium: “Open with Exifo”). The app works offline after the first visit: pages, code and codecs up to 1.5 MB are precached at install, and the two larger WASM modules (AVIF encoder, Content Credentials) are fetched in the background when the page sends the service worker a `cache-lazy` message (skipped when the browser asks to save data).
 
 ## Notes and decisions
 

@@ -62,9 +62,9 @@ export function OptionsBar() {
                   </ToggleChip>
                 ))}
               </div>
-              {!c.exif && (
-                <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Fields to remove inside EXIF">
-                  <span className="mr-1 text-[13px] font-medium text-ink-2">Inside EXIF, remove</span>
+              {(!c.exif || !c.xmp || !c.iptc || !c.text) && (
+                <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Details to remove from the blocks that stay">
+                  <span className="mr-1 text-[13px] font-medium text-ink-2">From the blocks that stay, remove</span>
                   {EXIF_CHOICES.map((o) => (
                     <ToggleChip key={o.key} pressed={!!c[o.key]} onChange={(v) => setCustom({ [o.key]: v })}>
                       {o.label}

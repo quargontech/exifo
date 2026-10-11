@@ -35,7 +35,16 @@ async function takeSharedFiles(): Promise<File[]> {
 export function PwaClient() {
   useEffect(() => {
     if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((err) => console.warn("Service worker not registered", err));
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/" })
+        .then(() => navigator.serviceWorker.ready)
+        .then((reg) => {
+          // Fetch the large codecs in the background so every tool works offline, unless the user is saving data.
+          const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+          if (connection?.saveData) return;
+          window.setTimeout(() => reg.active?.postMessage("cache-lazy"), 4000);
+        })
+        .catch((err) => console.warn("Service worker not registered", err));
     }
 
     // "Open with Exifo" for installed desktop apps.

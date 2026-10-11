@@ -165,6 +165,10 @@ export function scanPng(b: Uint8Array): ScanResult {
   };
 }
 
+/** Text-chunk keywords that hold a date or the creating software/device (PNG spec "Source" is the device). */
+const DATE_KEYWORDS = /^(creation time|creation date|create date|modify date|date:create|date:modify|date:timestamp)$/i;
+const DEVICE_KEYWORDS = /^(software|source)$/i;
+
 export function stripPng(b: Uint8Array, opts: StripOptions): ContainerStrip {
   const model = buildPngModel(b);
   const removeKinds = new Set<BlockKind>(opts.remove);
@@ -177,11 +181,28 @@ export function stripPng(b: Uint8Array, opts: StripOptions): ContainerStrip {
   const exifEdits = { ...opts.exifEdits, thumbnail: !!opts.exifEdits?.thumbnail || removeKinds.has("thumbnail") };
   const exifKept = model.exifChunk >= 0 && !removedIds.has(model.chunkBlock[model.exifChunk]!);
 
+  // Selective removal also reaches the last-modified time and kept text chunks.
+  const fe = opts.exifEdits;
+  const textEdits = new Set<string>();
+  const dropForEdit = (c: (typeof model.parse.chunks)[number]): boolean => {
+    if (c.type === "tIME") return !!fe?.dates;
+    if (c.type !== "tEXt" && c.type !== "zTXt" && c.type !== "iTXt") return false;
+    const keyword = itxtKeyword(b, c);
+    if (keyword === "XML:com.adobe.xmp") return false;
+    if (fe?.dates && DATE_KEYWORDS.test(keyword)) return !!textEdits.add("Dates in PNG text");
+    if (fe?.device && DEVICE_KEYWORDS.test(keyword)) return !!textEdits.add("Software in PNG text");
+    return false;
+  };
+
   const parts: Uint8Array[] = [b.subarray(0, 8)];
   let xmpWritten = false;
   model.parse.chunks.forEach((c, i) => {
     const id = model.chunkBlock[i];
     if (id && removedIds.has(id)) return;
+    if (dropForEdit(c)) {
+      if (c.type === "tIME" && id) removedIds.add(id);
+      return;
+    }
     if (replaceXmp && opts.xmp && !xmpWritten && (c.type === "IDAT" || c.type === "fcTL" || c.type === "IEND")) {
       parts.push(buildXmpITXt(opts.xmp));
       xmpWritten = true;
@@ -202,6 +223,7 @@ export function stripPng(b: Uint8Array, opts: StripOptions): ContainerStrip {
     }
   });
   if (model.trailerBlockId && !removedIds.has(model.trailerBlockId)) parts.push(b.subarray(model.parse.iendEnd));
+  edited.push(...textEdits);
   return { output: concat(parts), removedIds: [...removedIds], warnings: [], edited };
 }
 

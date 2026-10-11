@@ -112,8 +112,8 @@ export function WatermarkTool() {
 
   return (
     <ImageToolFrame tool="watermark" emptyTitle="Drop images to watermark">
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,1fr)]">
-        <section aria-label="Preview" className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,1fr)]">
+        <section aria-label="Preview" className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
           <div
             className={cn(
               "relative flex min-h-[240px] items-center justify-center overflow-hidden rounded-xl",
@@ -136,7 +136,7 @@ export function WatermarkTool() {
           {preview.status === "error" && <Notice tone="error">{preview.error}</Notice>}
         </section>
 
-        <section aria-label="Settings" className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 sm:p-5">
+        <section aria-label="Settings" className="flex min-w-0 flex-col gap-4 rounded-2xl border border-line bg-surface p-4 sm:p-5">
           <Segmented
             label="Watermark type"
             stretch

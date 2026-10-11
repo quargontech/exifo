@@ -37,7 +37,7 @@ export function ConvertTool() {
   useResultsHousekeeping(useConvertResults, key);
   const transparent = files.filter((f) => f.hasAlpha);
   const hasHeic = files.some((f) => f.format === "heic");
-  const hasGif = files.some((f) => f.format === "gif");
+  const animated = files.filter((f) => f.animated);
 
   const build: BuildRequest = (src) => ({
     ...src,
@@ -94,12 +94,17 @@ export function ConvertTool() {
         {format === "png" && <p className="m-0 text-[13px] text-ink-3">PNG is lossless and optimised with OxiPNG.</p>}
         {format === "jpeg" && transparent.length > 0 && (
           <Notice tone="quiet">
-            JPEG has no transparency. Transparent areas in {transparent.length === 1 ? transparent[0].name : `${transparent.length} files`} are filled with the
-            background colour.
+            JPEG has no transparency. Any transparent areas are filled with the background colour
+            {transparent.length === 1 ? ` (${transparent[0].name} can contain transparency).` : "."}
           </Notice>
         )}
         {hasHeic && <Notice tone="quiet">HEIC files are decoded on your device the first time they are converted, which can take a few seconds.</Notice>}
-        {hasGif && <Notice tone="quiet">Animated GIFs are converted from their first frame.</Notice>}
+        {animated.length > 0 && (
+          <Notice tone="warning">
+            {animated.length === 1 ? `${animated[0].name} is animated` : `${animated.length} files are animated`}. Only the first frame is converted; the
+            animation is not kept.
+          </Notice>
+        )}
         <CreditToggle />
       </section>
 

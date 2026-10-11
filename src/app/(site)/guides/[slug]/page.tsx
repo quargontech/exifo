@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const g = guideBySlug((await params).slug);
   if (!g) return {};
   return pageMetadata({
-    title: g.title,
+    title: g.seoTitle ?? g.title,
     description: g.description,
     path: `/guides/${g.slug}/`,
     og: `guide-${g.slug}`,
@@ -60,7 +60,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         <article className="flex min-w-0 flex-col gap-6">
           <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Guides", path: "/guides/" }, { name: g.short }]} />
           <header className="flex max-w-[760px] flex-col gap-3">
-            <div className="font-mono text-[11px] tracking-[0.08em] text-tag-deep">{g.category.toUpperCase()}</div>
+            <div className="font-mono text-xs tracking-[0.08em] text-tag-deep">{g.category.toUpperCase()}</div>
             <h1 className="font-display m-0 text-[32px] font-bold leading-[38px] sm:text-[42px] sm:leading-[48px]">{g.title}</h1>
             <p className="m-0 text-[17px] leading-[1.55] text-ink-2">{g.description}</p>
             <p className="m-0 text-[13px] text-ink-3">
@@ -74,7 +74,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
         <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
           <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5">
-            <div className="font-mono text-[11px] tracking-[0.08em] text-ink-3">TRY IT</div>
+            <div className="font-mono text-xs tracking-[0.08em] text-ink-3">TRY IT</div>
             <div className="text-lg font-semibold">{tool.label}</div>
             <p className="m-0 text-sm leading-[1.5] text-ink-2">{tool.blurb}</p>
             <Link href={tool.href} className={buttonVariants({ variant: "primary", className: "no-underline hover:text-primary-fg" })}>

@@ -3,6 +3,8 @@ import type { ToolId } from "@/lib/tools";
 export interface GuideMeta {
   slug: string;
   title: string;
+  /** Title tag when `title` (the page heading) is too long for search results. */
+  seoTitle?: string;
   /** Shorter title for cards and the footer. */
   short: string;
   description: string;
@@ -28,6 +30,7 @@ export const GUIDES: GuideMeta[] = [
   {
     slug: "remove-exif-data",
     title: "How to remove EXIF data from photos without losing quality",
+    seoTitle: "Remove EXIF data from photos without losing quality",
     short: "Remove EXIF data from photos",
     description:
       "Step-by-step: strip EXIF, GPS and other metadata from JPEG, PNG and WebP photos without re-compressing them, and check that nothing else changed.",
@@ -39,6 +42,7 @@ export const GUIDES: GuideMeta[] = [
   {
     slug: "remove-location-from-photos",
     title: "How to remove location data from photos before you share them",
+    seoTitle: "Remove location data from photos before sharing",
     short: "Remove location from photos",
     description:
       "Phone photos often carry the exact GPS position where they were taken. How to check for it, remove only the location, and stop your camera adding it.",
@@ -61,6 +65,7 @@ export const GUIDES: GuideMeta[] = [
   {
     slug: "check-if-image-is-ai-generated",
     title: "How to check if an image is AI-generated from its metadata",
+    seoTitle: "Check if an image is AI-generated from its metadata",
     short: "Check if an image is AI-generated",
     description:
       "What an image's metadata can tell you about AI generation: Content Credentials, IPTC digital source types and generator prompts, and the limits of each.",
@@ -72,6 +77,7 @@ export const GUIDES: GuideMeta[] = [
   {
     slug: "ai-prompts-in-png-metadata",
     title: "Why AI images can contain your prompt, and how to see it",
+    seoTitle: "Why AI images contain your prompt, and how to see it",
     short: "AI prompts hidden in PNG files",
     description:
       "Stable Diffusion, ComfyUI and other generators save the prompt, seed and settings inside the PNG. How to read them, and remove them before sharing.",
@@ -93,6 +99,7 @@ export const GUIDES: GuideMeta[] = [
   {
     slug: "compress-image-to-size",
     title: "How to compress an image to under 100 KB, 200 KB or 1 MB",
+    seoTitle: "Compress an image to under 100 KB, 200 KB or 1 MB",
     short: "Compress an image to a size",
     description:
       "Upload forms often set a file size limit. How to make a photo small enough while keeping it readable, and when to resize instead of lowering quality.",

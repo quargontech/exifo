@@ -17,6 +17,10 @@ import { PreviewPlaceholder, Spinner } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { useCreditSetting } from "@/lib/credit";
 import { CreditToggle } from "@/components/images/CreditToggle";
+import * as Comlink from "comlink";
+import { ALL_BLOCK_KINDS } from "@/lib/types";
+import { stripWorker } from "@/lib/workers";
+import { buildCreditXmp } from "@/lib/xmp-write";
 import { createResults } from "@/store/results";
 import { useImages, type ImageEntry } from "@/store/images";
 
@@ -28,9 +32,30 @@ interface Info {
   height: number;
   scaled: boolean;
   reached?: boolean;
+  /** Re-encoding was not smaller, so the original image data was kept with its metadata removed. */
+  original?: boolean;
 }
 
 const useCompressResults = createResults<Info>();
+
+/** Percentage saved, without rounding a 99.8% saving up to a misleading 100%. */
+const pct = (fraction: number) => {
+  const p = fraction * 100;
+  return p > 99 && p < 100 ? (Math.floor(p * 10) / 10).toFixed(1) : String(Math.round(p));
+};
+
+/** The original file with every metadata block removed losslessly (JPEG, PNG, WebP), plus the credit if enabled. */
+async function originalWithoutMetadata(f: ImageEntry, credit: boolean): Promise<ArrayBuffer | null> {
+  try {
+    const buf = await f.file.arrayBuffer();
+    const res = await stripWorker().call((api) =>
+      api.clean(Comlink.transfer(buf, [buf]), { remove: [...ALL_BLOCK_KINDS], keepOrientation: true, xmp: credit ? buildCreditXmp() : undefined }),
+    );
+    return res.output;
+  } catch {
+    return null;
+  }
+}
 const TARGETS = [100, 200, 500, 1000];
 
 export function CompressTool() {
@@ -68,6 +93,25 @@ export function CompressTool() {
       await runBatch(useCompressResults, files, key, async (f) => {
         const r = await runJob(f, build);
         const fmt = fmtFor(f);
+        // Re-encoding did not help: hand back the original image data, still without its metadata.
+        if (r.bytes >= f.size && !r.scaledTo && fmt === f.format && (fmt === "jpeg" || fmt === "png" || fmt === "webp")) {
+          const kept = await originalWithoutMetadata(f, credit);
+          if (kept && kept.byteLength <= r.bytes) {
+            return {
+              blob: new Blob([kept], { type: OUT_MIME[fmt] }),
+              name: outName(f.name, fmt, "-compressed"),
+              info: {
+                bytes: kept.byteLength,
+                quality: r.quality,
+                width: f.width,
+                height: f.height,
+                scaled: false,
+                reached: mode === "target" ? kept.byteLength <= targetKB * 1000 : undefined,
+                original: true,
+              },
+            };
+          }
+        }
         return {
           blob: new Blob([r.output], { type: OUT_MIME[fmt] }),
           name: outName(f.name, fmt, "-compressed"),
@@ -93,8 +137,8 @@ export function CompressTool() {
 
   return (
     <ImageToolFrame tool="compress" emptyTitle="Drop images to compress">
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,1fr)]">
-        <section aria-label="Preview" className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,1fr)]">
+        <section aria-label="Preview" className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
           {selected?.url ? (
             <BeforeAfter
               before={selected.url}
@@ -120,7 +164,7 @@ export function CompressTool() {
               <>
                 <span className="font-mono font-semibold">{formatBytes(pr.bytes)}</span>
                 <SignalBadge tone={pr.bytes < selected.size ? "proof" : "neutral"} size="sm">
-                  {pr.bytes < selected.size ? `−${Math.round((1 - pr.bytes / selected.size) * 100)}%` : `+${Math.round((pr.bytes / selected.size - 1) * 100)}%`}
+                  {pr.bytes < selected.size ? `−${pct(1 - pr.bytes / selected.size)}%` : `+${Math.round((pr.bytes / selected.size - 1) * 100)}%`}
                 </SignalBadge>
                 {mode === "target" && (
                   <span className="text-ink-3">
@@ -133,7 +177,7 @@ export function CompressTool() {
           </div>
         </section>
 
-        <section aria-label="Settings" className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 sm:p-5">
+        <section aria-label="Settings" className="flex min-w-0 flex-col gap-4 rounded-2xl border border-line bg-surface p-4 sm:p-5">
           <Field label="Format" htmlFor="cmp-format">
             <select id="cmp-format" className={selectClass} value={format} onChange={(e) => setFormat(e.target.value as FormatChoice)}>
               <option value="auto">Same as original</option>
@@ -207,9 +251,20 @@ export function CompressTool() {
                 <span className="font-mono text-[13px]">
                   {formatBytes(f.size)} → <b>{formatBytes(r.info.bytes)}</b>
                 </span>
-                <SignalBadge tone={saved > 0 ? "proof" : "neutral"} size="sm">
-                  {saved > 0 ? `−${Math.round(saved * 100)}%` : "larger"}
-                </SignalBadge>
+                {r.info.original ? (
+                  <SignalBadge tone="neutral" size="sm">
+                    Already optimised
+                  </SignalBadge>
+                ) : (
+                  <SignalBadge tone={saved > 0 ? "proof" : "neutral"} size="sm">
+                    {saved > 0 ? `−${pct(saved)}%` : saved === 0 ? "Same size" : "larger"}
+                  </SignalBadge>
+                )}
+                {r.info.scaled && (
+                  <span className="text-[13px] text-ink-3">
+                    resized to {r.info.width} × {r.info.height}
+                  </span>
+                )}
                 {r.info.reached === false && (
                   <SignalBadge tone="tag" size="sm">
                     Above target

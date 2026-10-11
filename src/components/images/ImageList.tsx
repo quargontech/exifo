@@ -52,7 +52,11 @@ export function ImageList({
             )}
             <div className="flex min-w-0 flex-[1_1_180px] flex-col gap-0.5">
               {selectable && files.length > 1 ? (
-                <button type="button" onClick={() => select(f.id)} className="self-start break-all text-left font-mono text-sm font-semibold hover:underline">
+                <button
+                  type="button"
+                  onClick={() => select(f.id)}
+                  className="-my-1.5 self-start break-all py-1.5 text-left font-mono text-sm font-semibold hover:underline"
+                >
                   {f.name}
                 </button>
               ) : (
@@ -62,6 +66,7 @@ export function ImageList({
                 {[FORMAT_LABEL[f.format], formatDims(f.width, f.height), formatBytes(f.size)].filter(Boolean).join(" · ")}
                 {f.status === "decoding" && " · decoding…"}
               </div>
+              {f.animated && <div className="text-[13px] text-tag-deep">Animated: only the first frame is kept.</div>}
               {f.error && <div className="text-[13px] text-danger">{f.error}</div>}
               {extra?.(f)}
             </div>

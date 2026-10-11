@@ -10,14 +10,17 @@ import type { ExifEdits } from "./types";
 import { TAG, TiffReader, parseTiff, type IfdName, type TiffIfd, type TiffInfo } from "./tiff";
 
 const DEVICE_TAGS: [IfdName, number][] = [
+  ["ifd0", 0x000b], // ProcessingSoftware
   ["ifd0", 0x010f], // Make
   ["ifd0", 0x0110], // Model
+  ["ifd0", 0x0131], // Software
   ["ifd0", 0x013c], // HostComputer
   ["ifd0", 0xc614], // UniqueCameraModel
   ["ifd0", 0xc62f], // CameraSerialNumber
   ["exif", 0x927c], // MakerNote
   ["exif", 0xa430], // CameraOwnerName
   ["exif", 0xa431], // BodySerialNumber
+  ["exif", 0xa432], // LensSpecification
   ["exif", 0xa433], // LensMake
   ["exif", 0xa434], // LensModel
   ["exif", 0xa435], // LensSerialNumber
@@ -35,6 +38,11 @@ const DATE_TAGS: [IfdName, number][] = [
   ["exif", 0x9292], // SubSecTimeDigitized
   ["gps", 0x0007], // GPSTimeStamp
   ["gps", 0x001d], // GPSDateStamp
+];
+
+const OWNER_TAGS: [IfdName, number][] = [
+  ["ifd0", 0x013b], // Artist
+  ["ifd0", 0x8298], // Copyright
 ];
 
 function zeroRange(b: Uint8Array, start: number, size: number) {
@@ -120,7 +128,8 @@ export function editExif(tiff: Uint8Array, edits: ExifEdits): string[] {
   if (edits.gps && removeGps(tiff)) done.push("GPS location");
   if (edits.device && removeTags(tiff, DEVICE_TAGS)) done.push("Device details");
   if (edits.thumbnail && removeThumbnail(tiff)) done.push("EXIF thumbnail");
+  if (edits.owner && removeTags(tiff, OWNER_TAGS)) done.push("Old EXIF creator and copyright");
   return done;
 }
 
-export const hasAnyExifEdit = (e?: ExifEdits) => !!e && !!(e.gps || e.device || e.dates || e.thumbnail);
+export const hasAnyExifEdit = (e?: ExifEdits) => !!e && !!(e.gps || e.device || e.dates || e.thumbnail || e.owner);

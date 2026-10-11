@@ -1,5 +1,6 @@
 // Generates out/sw.js with a precache list of the exported app (run after `next build`).
-// Large WASM codecs are not precached; they are cached the first time a tool uses them.
+// Codecs up to LAZY_BYTES are precached with the app. Larger ones (the AVIF encoder and the
+// Content Credentials module) are fetched in the background once the page asks for them.
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -19,11 +20,23 @@ const files = [];
   }
 })(OUT);
 
+const LAZY_BYTES = 1.5 * 1024 * 1024;
 const hash = crypto.createHash("sha256");
+const lazyHash = crypto.createHash("sha256");
 const urls = [];
+const lazy = [];
 for (const f of files.sort()) {
   const rel = path.relative(OUT, f).split(path.sep).join("/");
-  if (rel === "sw.js" || rel.endsWith(".map") || rel.endsWith(".wasm") || rel.startsWith("wasm/") || rel.startsWith("__shared")) continue;
+  if (rel === "sw.js" || rel.endsWith(".map") || rel.startsWith("__shared")) continue;
+  if (rel.endsWith(".wasm")) {
+    const bytes = fs.readFileSync(f);
+    hash.update(rel).update(bytes);
+    if (bytes.length > LAZY_BYTES) {
+      lazy.push(`/${rel}`);
+      lazyHash.update(rel).update(bytes);
+    } else urls.push(`/${rel}`);
+    continue;
+  }
   if (rel === "404.html" || rel === "404/index.html" || rel === "robots.txt") continue;
   if (rel.startsWith("og/") || rel.startsWith("icons/exifo-logo") || rel === "_headers" || rel === "robots.txt" || rel === "sitemap.xml") continue;
   hash.update(rel).update(fs.readFileSync(f));
@@ -33,6 +46,14 @@ for (const f of files.sort()) {
 }
 
 const version = hash.digest("hex").slice(0, 12);
+const lazyVersion = lazyHash.digest("hex").slice(0, 12);
 const template = fs.readFileSync(path.resolve("scripts/sw-template.js"), "utf8");
-fs.writeFileSync(path.join(OUT, "sw.js"), template.replace("__VERSION__", version).replace("__PRECACHE__", JSON.stringify(urls, null, 0)));
-console.log(`sw.js: ${urls.length} files precached, version ${version}`);
+fs.writeFileSync(
+  path.join(OUT, "sw.js"),
+  template
+    .replace("__VERSION__", version)
+    .replace("__PRECACHE__", JSON.stringify(urls, null, 0))
+    .replace("__LAZY__", JSON.stringify(lazy, null, 0))
+    .replace("__LAZY_VERSION__", lazyVersion),
+);
+console.log(`sw.js: ${urls.length} files precached, ${lazy.length} large codecs cached in the background, version ${version}`);

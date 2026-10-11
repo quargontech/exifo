@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import ReactCrop, { type PercentCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -117,7 +118,7 @@ export function ResizeTool() {
       size = { width: Math.max(1, Math.round(cw * s)), height: Math.max(1, Math.round(ch * s)) };
     }
     // Never enlarge past the source unless the user asks: scale the target down to fit the source box.
-    if (size && noUpscale && !p) {
+    if (size && noUpscale) {
       const over = Math.max(size.width / cw, size.height / ch);
       if (over > 1) size = { width: Math.max(1, Math.round(size.width / over)), height: Math.max(1, Math.round(size.height / over)) };
     }
@@ -209,8 +210,8 @@ export function ResizeTool() {
 
   return (
     <ImageToolFrame tool="resize" emptyTitle="Drop images to resize or crop">
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,1fr)]">
-        <section aria-label="Crop" className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,1fr)]">
+        <section aria-label="Crop" className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="m-0 text-[15px] font-semibold">Crop {files.length > 1 && <span className="font-normal text-ink-3">· {selected?.name}</span>}</h2>
             {validCrop(crop) && (
@@ -285,7 +286,7 @@ export function ResizeTool() {
           )}
         </section>
 
-        <section aria-label="Settings" className="flex flex-col gap-5 rounded-2xl border border-line bg-surface p-4 sm:p-5">
+        <section aria-label="Settings" className="flex min-w-0 flex-col gap-5 rounded-2xl border border-line bg-surface p-4 sm:p-5">
           <div className="flex flex-col gap-3">
             <h2 className="m-0 text-[15px] font-semibold">Size</h2>
             <div className="flex flex-wrap gap-2">
@@ -304,7 +305,7 @@ export function ResizeTool() {
                   )}
                 >
                   <span className="text-[13px] font-semibold">{x.label}</span>
-                  <span className="font-mono text-[11px] text-ink-3">
+                  <span className="font-mono text-xs text-ink-3">
                     {x.w} × {x.h}
                   </span>
                 </button>
@@ -376,8 +377,21 @@ export function ResizeTool() {
               </>
             )}
             {p && (
+              <Switch
+                checked={noUpscale}
+                onChange={setNoUpscale}
+                label="Don’t enlarge"
+                description="Smaller images keep their size instead of being scaled up."
+              />
+            )}
+            {p && (
+              <Button variant="ghost" size="sm" className="self-start" onClick={() => setPreset(null)}>
+                Clear preset
+              </Button>
+            )}
+            {p && (
               <p className="m-0 text-[13px] text-ink-3">
-                The image is cropped to {ratio(p.w, p.h)} and resized to {p.w} × {p.h} with Lanczos resampling.
+                The image is cropped to {ratio(p.w, p.h)} and resized to {p.w} × {p.h} with Lanczos resampling{noUpscale ? ", unless it is smaller" : ""}.
               </p>
             )}
           </div>
@@ -417,9 +431,14 @@ export function ResizeTool() {
               </span>
             </div>
             {allLossless && (
-              <SignalBadge tone="proof" icon="tick" className="self-start">
-                Lossless rotate: only the JPEG orientation tag changes
-              </SignalBadge>
+              <>
+                <SignalBadge tone="proof" icon="tick" className="self-start">
+                  Lossless rotate: only the JPEG orientation tag changes
+                </SignalBadge>
+                <p className="m-0 text-[13px] leading-[1.5] text-ink-2">
+                  All other metadata, including any location, stays in the file. To remove it, run the result through <Link href="/clean/">Clean</Link>.
+                </p>
+              </>
             )}
           </div>
 

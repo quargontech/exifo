@@ -10,7 +10,7 @@ import { AnalyticsSettingsLink } from "@/components/Analytics";
 function Col({ title, links, children }: { title: string; links: { href: string; label: string }[]; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2.5">
-      <h2 className="m-0 font-mono text-[11px] font-normal tracking-[0.08em] text-ink-3">{title}</h2>
+      <h2 className="m-0 font-mono text-xs font-normal tracking-[0.08em] text-ink-3">{title}</h2>
       <ul className="m-0 flex list-none flex-col gap-2 p-0">
         {links.map((l) => (
           <li key={l.href}>

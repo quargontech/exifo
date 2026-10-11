@@ -151,7 +151,7 @@ export function CheckTool() {
             <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-1.5">
               <div
                 className={cn(
-                  "font-mono text-[11px] tracking-[0.08em]",
+                  "font-mono text-xs tracking-[0.08em]",
                   info.verdict.startsWith("ai") ? "text-tag-deep" : info.verdict === "credentials" ? "text-proof" : "text-ink-3",
                 )}
               >

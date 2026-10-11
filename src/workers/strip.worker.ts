@@ -7,7 +7,7 @@ import * as Comlink from "comlink";
 import { analyze, type Analysis } from "../lib/report";
 import { strip } from "../lib/strip";
 import { comparePixels, imageDataHash, verifyImageData, type PixelCompareResult } from "../lib/verify";
-import { scan } from "../lib/container";
+import { scan, stripContainer } from "../lib/container";
 import { composeOrientation, setJpegOrientation } from "../lib/orientation";
 import { toArrayBuffer } from "../lib/bytes";
 import type { StripOptions, StripResult } from "../lib/types";
@@ -37,8 +37,20 @@ const api = {
     return imageDataHash(new Uint8Array(buf));
   },
 
+  /**
+   * Compare decoded pixels with the orientation tag taken out of both files first. Otherwise a
+   * removed tag (Keep orientation off), or a browser that ignores imageOrientation "none", makes
+   * byte-identical image data decode rotated on one side only.
+   */
   async comparePixels(a: ArrayBuffer, b: ArrayBuffer, mime: string, width: number, height: number): Promise<PixelCompareResult> {
-    return comparePixels(new Blob([a], { type: mime }), new Blob([b], { type: mime }), width, height);
+    const neutral = (buf: ArrayBuffer) => {
+      try {
+        return toArrayBuffer(stripContainer(new Uint8Array(buf), { remove: ["exif"], keepOrientation: false }).output);
+      } catch {
+        return buf;
+      }
+    };
+    return comparePixels(new Blob([neutral(a)], { type: mime }), new Blob([neutral(b)], { type: mime }), width, height);
   },
 };
 

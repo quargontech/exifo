@@ -18,7 +18,7 @@ function useActiveTool(): Tool | undefined {
 function NavGroup({ title, tools, active }: { title: string; tools: Tool[]; active?: Tool }) {
   return (
     <div className="flex flex-col gap-1">
-      <div className="px-2.5 pb-1 font-mono text-[11px] tracking-[0.08em] text-ink-3">{title}</div>
+      <div className="px-2.5 pb-1 font-mono text-xs tracking-[0.08em] text-ink-3">{title}</div>
       {tools.map((t) => {
         const on = active?.id === t.id;
         const Icon = t.icon;

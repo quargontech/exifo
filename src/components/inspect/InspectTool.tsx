@@ -245,7 +245,7 @@ export function InspectTool() {
                             <span className={cn("[overflow-wrap:anywhere]", r.meta && "font-semibold text-tag-deep")}>{r.name}</span>
                           </div>
                         </td>
-                        <td className="py-[9px] pr-3 text-ink-2 max-sm:text-[11px]">{formatOffset(r.offset)}</td>
+                        <td className="py-[9px] pr-3 text-ink-2 max-sm:text-xs">{formatOffset(r.offset)}</td>
                         <td className="whitespace-nowrap py-[9px] text-right tabular">{formatBytes(r.size)}</td>
                       </tr>
                     ))}

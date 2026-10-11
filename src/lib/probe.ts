@@ -18,6 +18,33 @@ export interface ProbeResult {
   make?: string;
   model?: string;
   hasAlpha?: boolean;
+  /** More than one frame (GIF, APNG, animated WebP, AVIF sequence). The image tools keep the first frame only. */
+  animated?: boolean;
+}
+
+/** Whether a GIF has a second frame, walking blocks within the bytes read. */
+function gifAnimated(b: Uint8Array): boolean {
+  if (b.length < 13) return false;
+  const tableSize = (flags: number) => (flags & 0x80 ? 3 * (1 << ((flags & 7) + 1)) : 0);
+  const skipSubBlocks = (q: number) => {
+    while (q < b.length) {
+      const n = b[q++];
+      if (n === 0) return q;
+      q += n;
+    }
+    return q;
+  };
+  let p = 13 + tableSize(b[10]);
+  let frames = 0;
+  while (p < b.length) {
+    if (b[p] === 0x2c) {
+      if (++frames > 1) return true;
+      p = skipSubBlocks(p + 10 + tableSize(b[p + 9]) + 1);
+    } else if (b[p] === 0x21) p = skipSubBlocks(p + 2);
+    else return false;
+  }
+  // Ran out of bytes inside the first frame: fall back to the looping extension as a hint.
+  return ascii(b, 0, Math.min(b.length, 4096)).includes("NETSCAPE2.0");
 }
 
 function exifInJpeg(b: Uint8Array): { tiff: Uint8Array | null; width: number; height: number } {
@@ -100,27 +127,32 @@ export function probe(b: Uint8Array): ProbeResult | null {
         const colorType = b[25];
         let tiff: Uint8Array | null = null;
         let hasAlpha = colorType === 4 || colorType === 6;
+        let animated = false;
         for (let p = 8; p + 12 <= b.length;) {
           const len = u32be(b, p);
           const type = ascii(b, p + 4, 4);
           if (type === "eXIf") tiff = b.subarray(p + 8, p + 8 + len);
           if (type === "tRNS") hasAlpha = true;
+          if (type === "acTL") animated = true;
           if (type === "IDAT" || type === "IEND") break;
           p += 12 + len;
         }
-        return { ...base, width: u32be(b, 16), height: u32be(b, 20), hasAlpha, ...exifFields(tiff) };
+        return { ...base, width: u32be(b, 16), height: u32be(b, 20), hasAlpha, animated, ...exifFields(tiff) };
       }
       case "webp": {
         let width = 0;
         let height = 0;
         let hasAlpha = false;
+        let animated = false;
         let tiff: Uint8Array | null = null;
         for (let p = 12; p + 8 <= b.length;) {
           const id = ascii(b, p, 4);
           const size = u32le(b, p + 4);
           const d = p + 8;
+          if (id === "ANIM" || id === "ANMF") animated = true;
           if (id === "VP8X") {
             hasAlpha = (b[d] & 0x10) !== 0;
+            animated ||= (b[d] & 0x02) !== 0;
             width = u24le(b, d + 4) + 1;
             height = u24le(b, d + 7) + 1;
           } else if (id === "VP8 " && !width) {
@@ -137,10 +169,10 @@ export function probe(b: Uint8Array): ProbeResult | null {
           }
           p = d + size + (size & 1);
         }
-        return { ...base, width, height, hasAlpha, ...exifFields(tiff) };
+        return { ...base, width, height, hasAlpha, animated, ...exifFields(tiff) };
       }
       case "gif":
-        return { ...base, width: u16le(b, 6), height: u16le(b, 8), hasAlpha: true };
+        return { ...base, width: u16le(b, 6), height: u16le(b, 8), hasAlpha: true, animated: gifAnimated(b) };
       case "bmp": {
         const w = u32le(b, 18) | 0;
         const h = u32le(b, 22) | 0;
@@ -148,7 +180,13 @@ export function probe(b: Uint8Array): ProbeResult | null {
       }
       case "heic":
       case "avif":
-        return { ...base, ...bmffInfo(b), hasAlpha: format === "avif" };
+        // An AVIF image sequence declares the 'avis' brand in its ftyp box.
+        return {
+          ...base,
+          ...bmffInfo(b),
+          hasAlpha: format === "avif",
+          animated: format === "avif" && ascii(b, 8, Math.max(0, Math.min(b.length, u32be(b, 0), 64) - 8)).includes("avis"),
+        };
       case "tiff": {
         const info = parseTiff(b);
         const r = new TiffReader(b, info?.le ?? true);

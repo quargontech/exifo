@@ -16,6 +16,20 @@ import { SkeletonStrip, Spinner } from "@/components/ui/progress";
 import { hasRemovable, useClean } from "@/store/clean";
 import { useFiles, type FileEntry } from "@/store/files";
 
+/** One chip per block type and fate, so a file with hundreds of identical blocks stays readable. */
+function groupChips(blocks: { id: string; short: string; size: number }[], removing: Set<string>) {
+  const groups = new Map<string, { key: string; short: string; kept: boolean; count: number; size: number }>();
+  for (const b of blocks) {
+    const kept = !removing.has(b.id);
+    const key = `${b.short}|${kept}`;
+    const g = groups.get(key) ?? { key, short: b.short, kept, count: 0, size: 0 };
+    g.count++;
+    g.size += b.size;
+    groups.set(key, g);
+  }
+  return [...groups.values()];
+}
+
 export function FileCard({ entry }: { entry: FileEntry }) {
   const options = useClean((s) => s.options);
   const result = useClean((s) => s.results[entry.id]);
@@ -116,17 +130,13 @@ export function FileCard({ entry }: { entry: FileEntry }) {
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5">
               <div className="flex flex-wrap gap-2">
-                {a.scan.blocks.map((b) =>
-                  willRemoveIds.has(b.id) ? (
-                    <BlockChip key={b.id}>
-                      {b.short} {formatBytes(b.size)}
-                    </BlockChip>
-                  ) : (
-                    <BlockChip key={b.id} kept>
-                      {b.short} {formatBytes(b.size)} kept
-                    </BlockChip>
-                  ),
-                )}
+                {groupChips(a.scan.blocks, willRemoveIds).map((g) => (
+                  <BlockChip key={g.key} kept={g.kept}>
+                    {g.short}
+                    {g.count > 1 ? ` × ${g.count}` : ""} {formatBytes(g.size)}
+                    {g.kept ? " kept" : ""}
+                  </BlockChip>
+                ))}
                 {a.report.icc && <BlockChip kept>ICC {formatBytes(a.report.icc.size)} kept</BlockChip>}
                 {a.scan.orientation > 1 && options.keepOrientation && <BlockChip kept>Orientation {a.scan.orientation} kept</BlockChip>}
               </div>
@@ -185,7 +195,11 @@ export function FileCard({ entry }: { entry: FileEntry }) {
               {formatBytes(done.bytesBefore)} → {formatBytes(done.bytesAfter)}
             </div>
             <div className="text-[13px] text-ink-2">
-              {done.bytesBefore >= done.bytesAfter ? `${formatBytes(done.bytesBefore - done.bytesAfter)} removed` : "XMP written"}
+              {done.bytesBefore > done.bytesAfter
+                ? `${formatBytes(done.bytesBefore - done.bytesAfter)} removed`
+                : done.bytesBefore === done.bytesAfter
+                  ? "Erased in place"
+                  : "XMP written"}
               {done.removed.length || done.edited.length ? `: ${listJoin([...new Set(done.removed.map((b) => b.short)), ...done.edited])}` : ""}
             </div>
             <SignalBadge tone="proof" icon="tick" className="exifo-pop [animation-delay:350ms]">

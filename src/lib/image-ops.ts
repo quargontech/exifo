@@ -135,6 +135,10 @@ export async function renderPixels(req: Omit<ProcessRequest, "encode" | "targetB
       : { x: 0, y: 0, width: bmp.width, height: bmp.height };
     const rot = t.rotate ?? 0;
     const swap = rot === 90 || rot === 270;
+    // Flips act on the rotated image as shown on screen. The canvas applies the scale before the
+    // rotation, so after a quarter turn a horizontal flip becomes a vertical one and vice versa.
+    const flipH = swap ? t.flipV : t.flipH;
+    const flipV = swap ? t.flipH : t.flipV;
     const cw = swap ? crop.height : crop.width;
     const ch = swap ? crop.width : crop.height;
     const canvas = new OffscreenCanvas(cw, ch);
@@ -147,7 +151,7 @@ export async function renderPixels(req: Omit<ProcessRequest, "encode" | "targetB
     ctx.save();
     ctx.translate(cw / 2, ch / 2);
     ctx.rotate((rot * Math.PI) / 180);
-    ctx.scale(t.flipH ? -1 : 1, t.flipV ? -1 : 1);
+    ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
     ctx.drawImage(bmp, crop.x, crop.y, crop.width, crop.height, -crop.width / 2, -crop.height / 2, crop.width, crop.height);
     ctx.restore();
     let img = ctx.getImageData(0, 0, cw, ch);

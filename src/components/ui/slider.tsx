@@ -41,6 +41,7 @@ export function Slider({
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(Number(e.target.value))}
+        aria-valuetext={format(value)}
         className="exifo-range w-full disabled:opacity-50"
       />
     </div>

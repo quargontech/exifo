@@ -11,7 +11,7 @@ export function CreditToggle() {
       checked={on}
       onChange={setOn}
       label="Add Exifo credit"
-      description="Writes a small “Software: Exifo” tag to the file’s metadata, visible in Inspect. JPEG, PNG and WebP only."
+      description="Adds a short XMP tag (about 0.4 KB) naming Exifo as the creator tool, visible in Inspect. JPEG, PNG and WebP only."
     />
   );
 }

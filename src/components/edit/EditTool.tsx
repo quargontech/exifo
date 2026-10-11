@@ -59,7 +59,7 @@ function toFields(f: Form): DescriptiveFields {
     creator: split(f.creator, /;/),
     copyright: f.copyright,
     credit: f.credit,
-    keywords: split(f.keywords, /[,;]/),
+    keywords: [...new Set(split(f.keywords, /[,;]/))],
     dateCreated: f.dateCreated,
   };
 }
@@ -81,7 +81,12 @@ export function EditTool() {
   const ready = files.filter((f) => f.status === "ready" && f.analysis);
   const [form, setForm] = useState<Form>(EMPTY);
   const [source, setSource] = useState<string | null>(null);
-  const [removeC2pa, setRemoveC2pa] = useState(true);
+  // Off by default: Edit is not a way to strip provenance; signed files are skipped unless the user opts in.
+  const [removeC2pa, setRemoveC2paState] = useState(false);
+  const setRemoveC2pa = (v: boolean) => {
+    setRemoveC2paState(v);
+    useEditResults.getState().reset();
+  };
   const [busy, setBusy] = useState(false);
   const [zipping, setZipping] = useState(false);
 
@@ -96,9 +101,9 @@ export function EditTool() {
   useEffect(() => useEditResults.getState().keepOnly(files.map((f) => f.id)), [files]);
 
   const fields = useMemo(() => toFields(form), [form]);
-  const packet = useMemo(() => buildXmpPacket(fields), [fields]);
   const withXmp = ready.filter((f) => f.analysis!.scan.blocks.some((b) => b.kind === "xmp"));
   const withC2pa = ready.filter((f) => f.analysis!.scan.blocks.some((b) => b.kind === "c2pa"));
+  const withSourceType = withXmp.filter((f) => f.analysis!.report.digitalSourceType);
   const targets = ready.filter((f) => removeC2pa || !withC2pa.includes(f));
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -114,7 +119,13 @@ export function EditTool() {
         try {
           const hasC2pa = withC2pa.includes(f);
           const buf = await f.file.arrayBuffer();
-          const res = await stripWorker().call((api) => api.clean(transfer(buf), { remove: hasC2pa ? ["c2pa"] : [], keepOrientation: true, xmp: packet }));
+          // Per file, so an existing AI source label in the old XMP is written into the new packet.
+          const xmp = buildXmpPacket({ ...fields, digitalSourceType: f.analysis!.report.digitalSourceType });
+          // A new creator or copyright replaces the old EXIF Artist / Copyright rather than contradicting it.
+          const owner = !!(fields.creator?.length || fields.copyright?.trim());
+          const res = await stripWorker().call((api) =>
+            api.clean(transfer(buf), { remove: hasC2pa ? ["c2pa"] : [], keepOrientation: true, xmp, exifEdits: owner ? { owner } : undefined }),
+          );
           store.succeed(f.id, new Blob([res.output], { type: FORMAT_MIME[f.format] }), editedName(f), { removedC2pa: hasC2pa });
         } catch (err) {
           store.fail(f.id, errorMessage(err));
@@ -186,7 +197,8 @@ export function EditTool() {
               </Field>
             </div>
             <p className="m-0 text-[13px] leading-[1.5] text-ink-3">
-              Written as one XMP packet (Dublin Core and Photoshop fields). The image data is copied byte for byte; EXIF and IPTC are left as they are.
+              Written as one XMP packet (Dublin Core and Photoshop fields). The image data is copied byte for byte. When you set a creator or copyright, the old
+              EXIF Artist and Copyright are removed so the file does not name two owners; everything else in EXIF and IPTC stays.
             </p>
             {withXmp.length > 0 && (
               <Notice tone="warning">
@@ -194,6 +206,7 @@ export function EditTool() {
                   ? "This file already has XMP."
                   : `${pluralize(withXmp.length, "file")} already ${withXmp.length === 1 ? "has" : "have"} XMP.`}{" "}
                 It will be replaced by these fields, so anything else in the existing XMP block (edit history, camera settings) is not kept.
+                {withSourceType.length > 0 && " Its AI source label (IPTC digital source type) is carried over into the new XMP."}
               </Notice>
             )}
             {withC2pa.length > 0 && (
@@ -201,13 +214,9 @@ export function EditTool() {
                 <div className="flex flex-col gap-2.5">
                   <span>
                     {pluralize(withC2pa.length, "file")} {withC2pa.length === 1 ? "has" : "have"} Content Credentials. Editing changes the file, so they would
-                    show as invalid.
+                    show as invalid. {withC2pa.length === 1 ? "It is" : "They are"} skipped unless you choose to remove the Content Credentials.
                   </span>
-                  <Switch
-                    checked={removeC2pa}
-                    onChange={setRemoveC2pa}
-                    label={removeC2pa ? "Remove the Content Credentials and edit" : "Skip these files (cancel)"}
-                  />
+                  <Switch checked={removeC2pa} onChange={setRemoveC2pa} label="Remove the Content Credentials and edit these files too" />
                 </div>
               </Notice>
             )}

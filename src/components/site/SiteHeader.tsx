@@ -23,7 +23,7 @@ function ToolsPanel({ onNavigate }: { onNavigate?: () => void }) {
     <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
       {(["metadata", "image"] as const).map((group) => (
         <div key={group} className="flex flex-col gap-1">
-          <div className="px-2.5 pb-1 font-mono text-[11px] tracking-[0.08em] text-ink-3">{group === "metadata" ? "METADATA" : "IMAGE"}</div>
+          <div className="px-2.5 pb-1 font-mono text-xs tracking-[0.08em] text-ink-3">{group === "metadata" ? "METADATA" : "IMAGE"}</div>
           {TOOLS.filter((t) => t.group === group).map((t) => {
             const Icon = t.icon;
             return (
@@ -75,6 +75,12 @@ export function SiteHeader({ variant = "site" }: { variant?: "site" | "app" }) {
   const [tools, setTools] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const toolsRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  // Move focus into the menu panel when it opens, so keyboard and screen-reader users land in it.
+  useEffect(() => {
+    if (drawer) drawerRef.current?.querySelector<HTMLElement>("a")?.focus();
+  }, [drawer]);
 
   useEffect(() => {
     setTools(false);
@@ -145,7 +151,8 @@ export function SiteHeader({ variant = "site" }: { variant?: "site" | "app" }) {
             {!pathname?.startsWith("/clean/") && (
               <Link
                 href="/clean/"
-                className={buttonVariants({ variant: "primary", size: "sm", className: "hidden px-4 no-underline hover:text-primary-fg sm:inline-flex" })}
+                // cn() so "hidden" overrides the base inline-flex; very narrow phones need the room for the menu button.
+                className={cn(buttonVariants({ variant: "primary", size: "sm" }), "hidden px-4 no-underline hover:text-primary-fg min-[360px]:inline-flex")}
               >
                 Clean images
               </Link>
@@ -167,7 +174,7 @@ export function SiteHeader({ variant = "site" }: { variant?: "site" | "app" }) {
       {drawer && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <button type="button" aria-label="Close menu" className="absolute inset-0 h-full w-full bg-black/40" onClick={() => setDrawer(false)} />
-          <div className="absolute inset-y-0 right-0 flex w-[min(360px,90vw)] flex-col gap-5 overflow-y-auto bg-surface px-4 py-5 shadow-xl">
+          <div ref={drawerRef} className="absolute inset-y-0 right-0 flex w-[min(360px,90vw)] flex-col gap-5 overflow-y-auto bg-surface px-4 py-5 shadow-xl">
             <div className="flex items-center justify-between pl-2">
               <Logo height={24} />
               <button

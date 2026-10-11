@@ -3,9 +3,10 @@
  * Compressed image data is copied byte for byte; pixels are never decoded.
  */
 
-import { bytesEqual, concat, identAt, u16be, u32be } from "./bytes";
+import { bytesEqual, concat, fromAscii, identAt, setU16be, u16be, u32be } from "./bytes";
 import { editExif, hasAnyExifEdit } from "./exif-edit";
 import { minimalOrientationApp1, needsOrientation } from "./exif-min";
+import { editIrb } from "./iptc";
 import { hasGps, hasThumbnail, parseTiff, readOrientation } from "./tiff";
 import { buildXmpApp1 } from "./xmp-write";
 import { damaged, ExifoError, type BlockKind, type ByteRange, type MetaBlock, type ScanResult, type Segment, type StripOptions } from "./types";
@@ -436,7 +437,28 @@ export function stripJpeg(b: Uint8Array, opts: StripOptions): ContainerStrip {
     const id = model.segBlock[i];
     return !!id && removedIds.has(id);
   };
-  const seg = (i: number): Piece => ({ seg: i, bytes: b.subarray(segs[i].offset, segs[i].end) });
+  const replaced = new Map<number, Uint8Array>();
+  const seg = (i: number): Piece => ({ seg: i, bytes: replaced.get(i) ?? b.subarray(segs[i].offset, segs[i].end) });
+
+  // IPTC: remove location, device or date datasets in place when the block stays.
+  const fe = opts.exifEdits;
+  const iptcSegs = segs.map((_, i) => i).filter((i) => model.segBlock[i] === "iptc" && !isRemoved(i));
+  if ((fe?.gps || fe?.device || fe?.dates) && iptcSegs.length === 1) {
+    const s = segs[iptcSegs[0]];
+    const res = editIrb(b.subarray(s.payloadStart + PS_ID.length, s.end), fe);
+    if (res) {
+      const body = concat([fromAscii(PS_ID), res.payload]);
+      const app13 = new Uint8Array(4 + body.length);
+      app13[0] = 0xff;
+      app13[1] = 0xed;
+      setU16be(app13, 2, 2 + body.length);
+      app13.set(body, 4);
+      replaced.set(iptcSegs[0], app13);
+      edited.push(...res.done);
+    }
+  } else if ((fe?.gps || fe?.device || fe?.dates) && iptcSegs.length > 1) {
+    warnings.push("The IPTC block in this file is split across several segments, so location, device and date fields inside it were left as they are.");
+  }
 
   // EXIF: keep (optionally edited), or replace with the minimal orientation block.
   let exifPiece: Piece | null = null;

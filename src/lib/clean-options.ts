@@ -1,6 +1,6 @@
 /** Map the Clean screen's options to StripOptions for one file. */
 
-import { isLocationProp, removeXmpProps } from "./xmp";
+import { isDateProp, isDeviceProp, isLocationProp, removeXmpProps } from "./xmp";
 import { buildXmpPacket, hasAnyField, MAX_JPEG_XMP } from "./xmp-write";
 import type { Analysis } from "./report";
 import { ALL_BLOCK_KINDS, type BlockKind, type MetaBlock, type StripOptions } from "./types";
@@ -106,17 +106,22 @@ export function toStripOptions(o: CleanOptions, analysis?: Analysis): PlannedStr
   const remove = removedKinds(o);
   const opts: StripOptions = { remove, keepOrientation: o.keepOrientation };
   const notes: string[] = [];
+  if (!o.keepOrientation && (analysis?.scan.orientation ?? 1) > 1) {
+    notes.push("The orientation tag will be removed, so some apps will show this image rotated. The image data itself is unchanged.");
+  }
   if (o.preset === "custom") {
     const c = o.custom;
-    if (!c.exif && !c.keepCopyright) opts.exifEdits = { gps: c.gps, device: c.device, dates: c.dates, thumbnail: c.thumbnails };
-    // Location inside a kept XMP block is removed too.
+    // Field-level removal applies to every block that stays: EXIF fields, IPTC datasets and PNG text
+    // chunks in the container code, XMP properties below.
+    if (!c.keepCopyright) opts.exifEdits = { gps: c.gps, device: c.device, dates: c.dates, thumbnail: c.thumbnails };
     const xmpText = analysis?.report.xmp;
-    if (c.gps && !c.xmp && !c.keepCopyright && xmpText) {
-      const { xml, removed } = removeXmpProps(xmpText, isLocationProp);
+    const tests = [c.gps && isLocationProp, c.device && isDeviceProp, c.dates && isDateProp].filter((t): t is (q: string) => boolean => !!t);
+    if (tests.length && !c.xmp && !c.keepCopyright && xmpText) {
+      const { xml, removed } = removeXmpProps(xmpText, (q) => tests.some((t) => t(q)));
       if (removed) {
         if (analysis.scan.format === "jpeg" && new TextEncoder().encode(xml).length > MAX_JPEG_XMP) {
           opts.remove = [...opts.remove, "xmp"];
-          notes.push("The XMP block also held a location and was too large to rewrite, so it was removed.");
+          notes.push("The XMP block also held these details and was too large to rewrite, so it was removed.");
         } else opts.xmp = xml;
       }
     }
@@ -131,7 +136,12 @@ export function toStripOptions(o: CleanOptions, analysis?: Analysis): PlannedStr
 
 /** Whether a block will be removed with these options (MPF safety rules aside). */
 export function willRemove(blk: MetaBlock, opts: StripOptions): boolean {
-  return opts.remove.includes(blk.kind) || (opts.xmp !== undefined && blk.kind === "xmp");
+  return (
+    opts.remove.includes(blk.kind) ||
+    (opts.xmp !== undefined && blk.kind === "xmp") ||
+    // A PNG's last-modified time chunk goes with "Dates".
+    (!!opts.exifEdits?.dates && blk.short === "tIME")
+  );
 }
 
 /** Human summary of what stays, for the helper text under the options. */
@@ -149,7 +159,7 @@ export function keptSummary(o: CleanOptions): string {
   if (!c.thumbnails) kept.push("Thumbnails");
   if (!c.other) kept.push("Other blocks");
   const fieldEdits: string[] = [];
-  if (!c.exif) {
+  if (kept.length) {
     if (c.gps) fieldEdits.push("location");
     if (c.device) fieldEdits.push("device details");
     if (c.dates) fieldEdits.push("dates");
@@ -158,6 +168,9 @@ export function keptSummary(o: CleanOptions): string {
   if (!kept.length) s = "Every metadata block is removed. ";
   else if (kept.length === 1) s = `${kept[0]} ${/Credentials|comments|blocks|Thumbnails/.test(kept[0]) ? "stay" : "stays"} in the file. `;
   else s = `${kept.slice(0, -1).join(", ")} and ${kept[kept.length - 1]} stay in the file. `;
-  if (fieldEdits.length) s += `Inside EXIF, ${fieldEdits.join(", ")} ${fieldEdits.length > 1 ? "are" : "is"} removed. `;
+  if (fieldEdits.length) {
+    const list = fieldEdits.length > 1 ? `${fieldEdits.slice(0, -1).join(", ")} and ${fieldEdits[fieldEdits.length - 1]}` : fieldEdits[0];
+    s += `${list[0].toUpperCase()}${list.slice(1)} ${fieldEdits.length > 1 ? "are" : "is"} removed from the blocks that stay. `;
+  }
   return s + base;
 }

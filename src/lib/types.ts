@@ -68,6 +68,8 @@ export interface ExifEdits {
   dates?: boolean;
   /** Remove IFD1 and its embedded thumbnail. */
   thumbnail?: boolean;
+  /** Remove Artist and Copyright (Edit writes the new owner to XMP, so the file never names two). */
+  owner?: boolean;
 }
 
 export interface StripOptions {

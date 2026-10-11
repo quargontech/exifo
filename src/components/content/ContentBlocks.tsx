@@ -33,8 +33,8 @@ export function FaqList({ faqs }: { faqs: Faq[] }) {
   return (
     <div className="flex flex-col divide-y divide-line rounded-2xl border border-line bg-surface">
       {faqs.map((f) => (
-        <details key={f.q} className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden" open>
-          <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+        <details key={f.q} className="group px-5 [&_summary::-webkit-details-marker]:hidden" open>
+          <summary className="flex cursor-pointer list-none items-start justify-between gap-4 py-4">
             <h3 className="m-0 text-base font-semibold leading-[1.4]">{f.q}</h3>
             <span className="mt-0.5 shrink-0 text-ink-3 transition-transform group-open:rotate-45" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -42,7 +42,7 @@ export function FaqList({ faqs }: { faqs: Faq[] }) {
               </svg>
             </span>
           </summary>
-          <p className="m-0 mt-2 max-w-[760px] text-[15px] leading-[1.6] text-ink-2">{f.a}</p>
+          <p className="m-0 -mt-2 max-w-[760px] pb-4 text-[15px] leading-[1.6] text-ink-2">{f.a}</p>
         </details>
       ))}
     </div>
@@ -67,11 +67,11 @@ export function ToolCards({ ids, className }: { ids: ToolId[]; className?: strin
               </span>
               <span className="min-w-0 text-base font-semibold leading-[1.3]">{t.label}</span>
               {t.lossy ? (
-                <span className="ml-auto shrink-0 whitespace-nowrap rounded-full border border-line-strong px-2 py-0.5 text-[11px] font-semibold text-ink-3">
+                <span className="ml-auto shrink-0 whitespace-nowrap rounded-full border border-line-strong px-2 py-0.5 text-xs font-semibold text-ink-3">
                   Re-encodes
                 </span>
               ) : (
-                <span className="ml-auto shrink-0 whitespace-nowrap rounded-full bg-proof-tint px-2 py-0.5 text-[11px] font-semibold text-proof">Lossless</span>
+                <span className="ml-auto shrink-0 whitespace-nowrap rounded-full bg-proof-tint px-2 py-0.5 text-xs font-semibold text-proof">Lossless</span>
               )}
             </div>
             <p className="m-0 text-sm leading-[1.5] text-ink-2">{t.blurb}</p>
@@ -95,7 +95,7 @@ export function GuideCards({ guides, className }: { guides: GuideMeta[]; classNa
           href={`/guides/${g.slug}/`}
           className="group flex flex-col gap-2 rounded-2xl border border-line bg-surface p-5 text-ink no-underline transition-colors hover:border-line-strong hover:text-ink"
         >
-          <span className="font-mono text-[11px] tracking-[0.08em] text-tag-deep">{g.category.toUpperCase()}</span>
+          <span className="font-mono text-xs tracking-[0.08em] text-tag-deep">{g.category.toUpperCase()}</span>
           <span className="text-base font-semibold leading-[1.35]">{g.title}</span>
           <span className="text-sm leading-[1.5] text-ink-2">{g.description}</span>
           <span className="mt-auto pt-1 text-[13px] text-ink-3">{g.minutes} min read</span>

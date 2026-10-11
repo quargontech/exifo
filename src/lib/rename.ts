@@ -48,12 +48,14 @@ function dateParts(input: RenameInput): { date: string; time: string } {
   };
 }
 
-const sanitize = (s: string) =>
+/** Make a string safe as a file name (no path or reserved characters, no leading or trailing dots and spaces). */
+export const sanitizeFileName = (s: string) =>
   s
     .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, "-")
     .replace(/\s+/g, " ")
     .trim()
-    .replace(/^\.+/, "");
+    .replace(/^\.+/, "")
+    .replace(/[.\s]+$/, "");
 
 export function renameOne(input: RenameInput, index: number, s: RenameSettings): string {
   const [base, ext] = splitExt(input.name);
@@ -68,7 +70,7 @@ export function renameOne(input: RenameInput, index: number, s: RenameSettings):
     width: input.width ? String(input.width) : "0",
     height: input.height ? String(input.height) : "0",
   };
-  const out = sanitize(s.pattern.replace(/\{(\w+)\}/g, (m, k: string) => values[k] ?? m)) || base;
+  const out = sanitizeFileName(s.pattern.replace(/\{(\w+)\}/g, (m, k: string) => values[k] ?? m)) || base;
   return out + (s.lowerExt ? ext.toLowerCase() : ext);
 }
 
